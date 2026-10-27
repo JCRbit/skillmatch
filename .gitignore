@@ -1,0 +1,45 @@
+# Secrets and local config
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# JS
+node_modules/
+dist/
+coverage/
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/mcp.json.example
+
+# Local data/artifacts
+*.sqlite
+*.db
+data/raw/
+data/private/
+artifacts/private/
+docs/legacy-audit/generated/*
+!docs/legacy-audit/generated/.gitkeep
+
+# Agent traces/sessions — do not commit user prompts, secrets or local histories
+.codex/
+.claude/local/
+.cursor/local/
+agent-traces/

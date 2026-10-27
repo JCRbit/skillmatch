@@ -1,0 +1,5 @@
+---
+description: Global project boundaries and engineering standards for SkillMatch
+alwaysApply: true
+---
+Follow `/AGENTS.md` as the canonical project policy. This is a separate product repository; never mix it with the legacy `TinderJob_Fork` checkout. Until the PO approves the legacy audit, work read-only on legacy and produce evidence-based reports only. Never claim a feature exists solely because it is described in a README. No production deployment, destructive migration, external application submission, or new paid service without explicit human approval. Read the relevant requirement and ADR before implementation; add tests and report test results honestly.

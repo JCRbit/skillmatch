@@ -1,0 +1,9 @@
+component,source_repo_or_path,status,evidence_required,license_or_data_rights,decision_owner,tests_required,notes
+Legacy offer scraper,TinderJob_Fork,UNKNOWN,entrypoint + source + output + tests,code and source terms to verify,Vanessa,fixture/replay tests,Do not copy before audit
+Cleaning/normalization,TinderJob_Fork,UNKNOWN,transformation functions + data-quality tests,code/data licenses to verify,Vanessa,unit tests + before/after fixtures,Potentially useful if deterministic
+Streamlit dashboard,TinderJob_Fork,REFERENCE_ONLY provisional,verified routes/views and data dependencies,code license to verify,Vanessa,manual UX review,Keep separate from new React UI unless PO chooses otherwise
+Offer ingestion patterns,datascry/openroles,REFERENCE_ONLY,read exact implementation and source list,code MIT per repo; data CC BY-SA 4.0 per README,Vanessa,source adapter tests,Do not assume data license applies to code or vice versa
+Semantic matching/RAG,CoderSATTY/Jobs-Tinder,REFERENCE_ONLY,inspect source and verify features,MIT per repo metadata,Vanessa,evaluation + grounding tests,README architecture is not proof of production behavior
+Candidate job tracker,Gsync/jobsync,REFERENCE_ONLY,inspect schema/tests before adapting,MIT per repo metadata,Vanessa,workflow + privacy tests,Could inform dashboard and application tracker
+Job CRUD role flow,Boki136/Jobbing,REFERENCE_ONLY,inspect code + LICENSE,license not confirmed,Vanessa,CRUD and authorization tests,Use only pattern until licensing is confirmed
+Auto-apply automation,GabeGiro/EasyApplyJobsBot,DO_NOT_REUSE,review policy and security implications,MIT metadata does not grant portal permission,Vanessa,not applicable,Apply Copilot must not auto-submit or store portal credentials

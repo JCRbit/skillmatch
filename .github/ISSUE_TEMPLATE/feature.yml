@@ -1,0 +1,35 @@
+name: Feature / capability
+about: Propose a small, testable capability linked to product requirements
+labels: ["feature"]
+title: "[FR-XXX] "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / user need
+      description: Who needs this and why?
+    validations:
+      required: true
+  - type: textarea
+    id: requirement
+    attributes:
+      label: Requirement IDs and acceptance criteria
+      description: Link docs/REQUIREMENTS.md; write testable Given/When/Then criteria.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: In scope / out of scope
+    validations:
+      required: true
+  - type: textarea
+    id: risks
+    attributes:
+      label: Data, privacy, security, AI or external-service risks
+  - type: textarea
+    id: tests
+    attributes:
+      label: Test plan
+      validations:
+        required: true
