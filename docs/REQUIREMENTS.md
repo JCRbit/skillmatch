@@ -20,7 +20,8 @@ Estados permitidos: `NOT_STARTED`, `IN_PROGRESS`, `BLOCKED`, `VERIFIED`, `DEFERR
 | FR-012 | Vista ciega temprana | API/UI/exports/logs no filtran campos bloqueados antes de etapa autorizada | P0 | Tests negativos de filtración |
 | FR-013 | Canal de contacto tras match | Solo las dos partes del match pueden ver los datos definidos | P0 | Tests de autorización |
 | FR-014 | RAG de empresa/oferta | Respuestas restringidas a contexto autorizado; referencias a fuentes; fallback de desconocimiento | P1 | Corpus sintético + tests adversariales |
-| FR-015 | Asistente de preparación de entrevistas | Sugiere preguntas y preparación basadas en oferta, sin inventar requisitos/empresa | P1 | Set de evaluación |
+| FR-015 | Asistente de preparación de entrevistas — flujo LangGraph (entrevista inicial + feedback personalizado) | Contexto autorizado; preparación de preguntas; recogida respuestas; feedback personalizado con fortalezas/mejoras/recomendaciones; distinción hechos/sugerencias; revisión humana; registro versión/fuentes/resultados; casos error/manipulación | P1 | Dataset sintético + evaluación del flujo + pruebas adversariales | No implementar sin datos y criterios; no tomar decisiones laborales automáticas |
+| FR-015-ext | Agente de apoyo al perfil (mejoras + carta) | Borradores editables; sustento por datos del usuario; nunca envío automático; revisión humana | P1 | Pruebas con perfiles sintéticos |
 | FR-016 | Sugerencias de perfil y carta | Borradores editables sustentados por datos del usuario; nunca envío automático | P1 | Pruebas con perfiles sintéticos |
 | FR-017 | Dashboard empresa | Métricas de pipeline y estados agregados con supresión de grupos pequeños cuando proceda | P1 | Test UI + cálculos |
 | FR-018 | Auditoría de acciones | Registra quién hizo qué, cuándo, entidad, resultado y versión relevante, sin guardar payloads sensibles innecesarios | P0 | Tests de auditoría |
