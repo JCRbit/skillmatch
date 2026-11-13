@@ -1,0 +1,124 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docs:
+    name: Docs · enlaces internos
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verificar que los enlaces internos de Markdown existen
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import re
+          import sys
+          from pathlib import Path
+
+          LINK = re.compile(r"\[[^\]]*\]\(([^)\s]+)")
+          SKIP = ("http://", "https://", "mailto:", "tel:", "#", "data:")
+          missing = []
+
+          for md in sorted(Path(".").rglob("*.md")):
+              if ".git" in md.parts or "node_modules" in md.parts:
+                  continue
+              text = md.read_text(encoding="utf-8", errors="replace")
+              for raw in LINK.findall(text):
+                  target = raw.strip().strip("<>")
+                  if not target or target.startswith(SKIP):
+                      continue
+                  path = target.split("#")[0].split("?")[0]
+                  if not path:
+                      continue
+                  if not (md.parent / path).exists():
+                      missing.append(f"{md.as_posix()} -> {target}")
+
+          if missing:
+              print("Enlaces internos rotos:")
+              for item in missing:
+                  print(f"  - {item}")
+              sys.exit(1)
+
+          print("OK: todos los enlaces internos resuelven")
+          PY
+
+  security:
+    name: Security · escaneo heurístico de secretos
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Buscar patrones de secretos conocidos
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Heurística básica. No sustituye a un escáner completo (p. ej. gitleaks/trufflehog)
+          # ni a la revisión humana del diff (ver docs/QUALITY_GATES.md).
+          if grep -rInE --exclude-dir=.git \
+            'AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{36,}|xox[baprs]-[A-Za-z0-9-]{10,}|sk-[A-Za-z0-9]{32,}' \
+            . ; then
+            echo "::error::Posibles secretos detectados. Revisa el hallazgo; si es real, rota la credencial."
+            exit 1
+          fi
+          echo "OK: sin patrones de secretos conocidos"
+
+  code:
+    name: Code · lint y tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Los pasos de código se activan solos cuando exista el árbol de código.
+      # Hoy no hay backend/ ni frontend/: los pasos quedan en skipped, no en passed.
+
+      - name: Backend · preparar Python
+        if: ${{ hashFiles('backend/pyproject.toml') != '' }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Backend · ruff + pytest
+        if: ${{ hashFiles('backend/pyproject.toml') != '' }}
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check ruff pytest
+          if [ -f backend/requirements.txt ]; then
+            python -m pip install --disable-pip-version-check -r backend/requirements.txt
+          fi
+          ruff check backend
+          python -m pytest backend/tests -q
+
+      - name: Frontend · preparar Node
+        if: ${{ hashFiles('frontend/package.json') != '' }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Frontend · lint + test + build
+        if: ${{ hashFiles('frontend/package.json') != '' }}
+        working-directory: frontend
+        run: |
+          set -euo pipefail
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+          npm run lint
+          npm test
+          if node -e "process.exit(require('./package.json').scripts && require('./package.json').scripts.build ? 0 : 1)"; then
+            npm run build
+          fi
