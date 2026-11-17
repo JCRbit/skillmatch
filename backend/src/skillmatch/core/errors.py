@@ -7,6 +7,7 @@ data.
 """
 
 import logging
+from collections.abc import Mapping
 from http import HTTPStatus
 from typing import ClassVar
 
@@ -90,7 +91,7 @@ def _problem(
     detail: str,
     instance: str,
     errors: list[dict[str, object]] | None = None,
-    headers: dict[str, str] | None = None,
+    headers: Mapping[str, str] | None = None,
 ) -> JSONResponse:
     """Build an ``application/problem+json`` response."""
     body: dict[str, object] = {
