@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
 from skillmatch import __version__
+from skillmatch.api.deps import SettingsDep
 from skillmatch.app import create_app
 from skillmatch.core.config import Environment, Settings
 
@@ -37,3 +38,14 @@ def test_cors_is_disabled_when_no_origin_is_configured(client: TestClient) -> No
     response = client.get("/health", headers={"Origin": "http://localhost:5173"})
 
     assert "access-control-allow-origin" not in response.headers
+
+
+def test_settings_dependency_resolves_to_the_configuration_of_the_app() -> None:
+    app = create_app(Settings(environment=Environment.TEST, app_name="Custom name"))
+
+    @app.get("/_test/app-name")
+    async def app_name(settings: SettingsDep) -> dict[str, str]:
+        return {"app_name": settings.app_name}
+
+    with TestClient(app) as test_client:
+        assert test_client.get("/_test/app-name").json() == {"app_name": "Custom name"}
