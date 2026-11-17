@@ -94,16 +94,27 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Backend · ruff + pytest
+      - name: Backend · instalar uv
         if: ${{ hashFiles('backend/pyproject.toml') != '' }}
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Backend · instalar dependencias (lockfile)
+        if: ${{ hashFiles('backend/pyproject.toml') != '' }}
+        working-directory: backend
+        run: uv sync --locked
+
+      - name: Backend · ruff, mypy y pytest
+        if: ${{ hashFiles('backend/pyproject.toml') != '' }}
+        working-directory: backend
         run: |
           set -euo pipefail
-          python -m pip install --disable-pip-version-check ruff pytest
-          if [ -f backend/requirements.txt ]; then
-            python -m pip install --disable-pip-version-check -r backend/requirements.txt
-          fi
-          ruff check backend
-          python -m pytest backend/tests -q
+          uv run ruff check .
+          uv run ruff format --check .
+          uv run mypy
+          uv run pytest --cov --cov-report=term-missing
 
       - name: Frontend · preparar Node
         if: ${{ hashFiles('frontend/package.json') != '' }}
