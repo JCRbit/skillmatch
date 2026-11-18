@@ -97,16 +97,10 @@ services:
       - ./frontend:/app
       # Keep node_modules in a named volume so host binaries never leak into the container.
       - web_node_modules:/app/node_modules
-    # Remove the package.json guard once the frontend skeleton (task P-02) is merged.
     command:
       - sh
       - -c
-      - >-
-        if [ ! -f package.json ]; then
-        echo "frontend/ has no package.json yet (task P-02); web service is idle.";
-        exit 0;
-        fi;
-        npm ci && npm run dev -- --host 0.0.0.0 --port 5173
+      - npm ci && npm run dev -- --host 0.0.0.0 --port 5173
     restart: "no"
     logging: *default-logging
 
