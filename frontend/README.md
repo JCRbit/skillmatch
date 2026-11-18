@@ -82,7 +82,6 @@ El contrato OpenAPI se encuentra en ../backend/openapi.json.
 ```bash
 ## Estructura del proyecto
 
-```text
 frontend/
 ├── src/
 │   ├── api/
@@ -105,11 +104,3 @@ frontend/
 ├── tsconfig.node.json         # Configuración TypeScript de Node
 └── vite.config.ts             # Configuración de Vite y Vitest
 ```
-
----
-
-## Cliente API
-
-Los tipos TypeScript de la API se generan a partir del contrato OpenAPI del backend. La comunicación HTTP utilizará la API nativa fetch del navegador.
-
->> Consulta el contrato en ../backend/openapi.json
