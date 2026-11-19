@@ -11,9 +11,14 @@ requires-python = ">=3.12"
 # Runtime dependencies only. Libraries are added by the task that needs them
 # (e.g. SQLAlchemy/Alembic/psycopg arrive with B-01) using `uv add <package>`.
 dependencies = [
+    "aiosqlite>=0.22.1",
+    "alembic>=1.20.1",
+    "asyncpg>=0.32.0",
     "fastapi>=0.115",
+    "psycopg2-binary>=2.9.13",
     "pydantic>=2.9",
     "pydantic-settings>=2.6",
+    "sqlalchemy[asyncio]>=2.1.9",
     "uvicorn[standard]>=0.32",
 ]
 
