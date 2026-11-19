@@ -1,13 +1,13 @@
+"""Database configuration and SQLAlchemy setup for async PostgreSQL connections."""
+
 import os
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
 # URL de conexión a PostgreSQL.
-# Se puede sobreescribir con la variable de entorno SKILLMATCH_DATABASE_URL
-# (el prefijo SKILLMATCH_ es el que usa el proyecto). Si no está definida,
-# usamos una base de datos local por defecto.
 DATABASE_URL = os.getenv(
-    "SKILLMATCH_DATABASE_URL",
+    "DATABASE_URL",
     "postgresql+asyncpg://postgres:postgres@localhost:5432/skillmatch",
 )
 
@@ -17,7 +17,11 @@ engine = create_async_engine(DATABASE_URL, echo=False)
 # Fábrica de sesiones: cada operación con la BD pedirá una sesión aquí.
 async_session_maker = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
-# Clase Base: TODAS las tablas heredarán de ella.
-# Alembic la usa para descubrir qué tablas tiene que crear.
+
 class Base(DeclarativeBase):
+    """Base class for all SQLAlchemy models.
+
+    Alembic uses Base.metadata to discover which tables need to be created.
+    """
+
     pass

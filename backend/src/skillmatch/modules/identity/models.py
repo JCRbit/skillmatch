@@ -1,25 +1,43 @@
+"""Identity module models for user management."""
+
 import enum
-from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, Enum
+from datetime import UTC, datetime
+
+from sqlalchemy import DateTime, Enum, String
+from sqlalchemy.orm import Mapped, mapped_column
+
 from skillmatch.core.database import Base
 
-# 1. Definimos los roles posibles como un Enum (lista cerrada de opciones)
-class UserRole(str, enum.Enum):
+
+class UserRole(enum.StrEnum):
+    """Possible roles a user can have in the platform."""
+
     TALENTO = "talento"
     EMPRESA = "empresa"
     ADMIN = "admin"
 
-# 2. Definimos la tabla 'users'
+
 class User(Base):
+    """Identity record: who the user is, separated from talent/company profile data."""
+
     __tablename__ = "users"
 
-    # Columnas básicas de identidad
-    id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True, nullable=False)
-    password_hash = Column(String, nullable=False) # Aquí se guardará la contraseña cifrada
-    role = Column(Enum(UserRole), nullable=False)  # Talento, Empresa o Admin
-    status = Column(String, default="active")      # active, banned, pending...
-    
-    # Columnas de auditoría (cuándo se creó y cuándo entró por última vez)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    last_login_at = Column(DateTime, nullable=True)
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    email: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
+
+    # Nullable: an external identity provider may own the credentials instead.
+    password_hash: Mapped[str | None] = mapped_column(String, nullable=True)
+
+    role: Mapped[UserRole] = mapped_column(Enum(UserRole), nullable=False)
+    status: Mapped[str] = mapped_column(String, default="active", nullable=False)
+
+    # timezone=True makes the column store timezone-aware timestamps.
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        nullable=False,
+    )
+    last_login_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
