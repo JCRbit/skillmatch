@@ -1,15 +1,13 @@
 """Database configuration and SQLAlchemy setup for async PostgreSQL connections."""
 
-import os
-
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
-# URL de conexión a PostgreSQL.
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql+asyncpg://postgres:postgres@localhost:5432/skillmatch",
-)
+from skillmatch.core.config import get_settings
+
+# Obtener la configuración centralizada (lee .env o variables de entorno con prefijo SKILLMATCH_)
+settings = get_settings()
+DATABASE_URL = settings.database_url
 
 # Motor asíncrono: gestiona las conexiones reales con la base de datos.
 engine = create_async_engine(DATABASE_URL, echo=False)
@@ -21,7 +19,8 @@ async_session_maker = async_sessionmaker(engine, class_=AsyncSession, expire_on_
 class Base(DeclarativeBase):
     """Base class for all SQLAlchemy models.
 
-    Alembic uses Base.metadata to discover which tables need to be created.
+    Alembic uses Base.metadata to discover which tables need to
+    be created or updated during migrations.
     """
 
     pass
