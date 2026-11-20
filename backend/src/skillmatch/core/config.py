@@ -47,10 +47,13 @@ class Settings(BaseSettings):
     cors_allowed_origins: list[str] = Field(default_factory=list)
 
     # Añadido: Lee SKILLMATCH_DATABASE_URL o DATABASE_URL (del .env)
-    database_url: str = Field(
-       default="postgresql+asyncpg://postgres:postgres@localhost:5432/skillmatch",
-       validation_alias="DATABASE_URL",
-   )
+    database_url: str = Field(  # type: ignore[pydantic-alias]
+        default="postgresql+asyncpg://postgres:postgres@localhost:5432/skillmatch",
+        validation_alias=AliasChoices(
+            "SKILLMATCH_DATABASE_URL",
+            "DATABASE_URL",
+        ),
+    )
 
     @model_validator(mode="after")
     def _reject_unsafe_production_settings(self) -> Self:

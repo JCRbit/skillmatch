@@ -294,7 +294,7 @@ jobs:
     env:
       # Contract with task B-01: Alembic's env.py must read this variable. The database is created
       # for this job only and destroyed with it; migrations are never applied anywhere else from CI.
-      SKILLMATCH_DATABASE_URL: postgresql+psycopg://skillmatch:ci-throwaway-password@localhost:5432/skillmatch_ci
+      SKILLMATCH_DATABASE_URL: postgresql+asyncpg://skillmatch:ci-throwaway-password@localhost:5432/skillmatch_ci
     steps:
       - name: Checkout
         uses: actions/checkout@v4
