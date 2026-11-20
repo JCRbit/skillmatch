@@ -1,7 +1,7 @@
 # ADR-0002 — Stack inicial de aplicación
 
-- Estado: **Propuesto, sujeto a auditoría y spike técnico**
-- Fecha: 2026-10-27
+- Estado: **Aprobado por PO (Vanessa) — 2026-11-20** (alineado con `D-08`, `compose.yaml` y PRs `#104`–`#106`)
+- Fecha: 2026-11-20
 - Owner: Luis (propuesta de backend/DB), Vanessa PO aprueba alcance
 
 ## Decisión propuesta
@@ -22,3 +22,6 @@ Kafka, Spark, Kubernetes, microservicios ni un segundo vector store. Polars solo
 - Redis/ARQ añade operación; activarlo cuando se necesite trabajo durable.
 - El vector retrieval <300 ms se debe medir bajo una carga y hardware definidos.
 - La selección de proveedor/modelo de embeddings queda tras benchmark en español e inglés.
+
+
+> **Nota de alcance MVP (2026-11-20):** Se aprueba el monolito modular FastAPI + PostgreSQL 16 + React/TypeScript con Docker Compose (`compose.yaml`). Qdrant y Redis/ARQ quedan fuera del MVP (`D-06`, `D-08`), empleando un adaptador de embeddings ligero con índice vectorial embebido (`[E-01]`).

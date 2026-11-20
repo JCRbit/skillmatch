@@ -1,67 +1,52 @@
 # Roadmap de 6 semanas (2 nov.–11 dic. 2026)
 
-> Plan base con corte de alcance. Apply Copilot y ranking supervisado son stretch, no deben bloquear la demo principal.
+> Plan alineado con los milestones de GitHub (`M0`–`M4`) y la decisión `D-10` (Feature freeze: 7 de diciembre; Estabilización: 8–9 de diciembre; Demo y defensa: 10–11 de diciembre de 2026). Apply Copilot, scraping externo, parsing de CV PDF y Qdrant/Redis quedan fuera del MVP.
 
-## Semana 0 / antes del 2 de noviembre (preparación si hay tiempo)
+## M0 (Semanas 1–2) — 2–15 noviembre: auditoría legacy y cierre de alcance
 
-- Crear repo nuevo; instalar foundation pack.
-- Confirmar accesos de solo lectura al legacy y al GitHub.
-- Nombrar un issue por cada artefacto de auditoría.
+- Crear repositorio nuevo (`JCRbit/skillmatch`) e instalar foundation pack.
+- Auditoría read-only de `TinderJob_Fork` (`docs/legacy-audit/`): inventario, seguridad, calidad de datos, reuse register y unknowns.
+- Aprobación de alcance MVP (`D-01`–`D-11`), alineación de documentos rectores (`[G-02]`) y cierre del contrato de arquitectura (`ADR-0001`–`ADR-0006`).
 
-## Semana 1 — 2–8 noviembre: auditoría y arquitectura
+**Salida:** `GO` con alcance acotado y backlog priorizado (`MUST` / `SHOULD` / `COULD`).
 
-- Inventory SHA/branch/status y archivo de backup.
-- Leer entrypoints, deps, licencias/datos, tests, notebooks, scraper y dashboard.
-- Crear mapas de datos, hallazgos de seguridad, reuse register y unknowns.
-- Vanessa acepta/rechaza alcance de reutilización; aprobar ADR 0001/0002.
+## M1 (Semana 3) — 16–22 noviembre: esqueleto andante
 
-**Salida:** GO/GO WITH CONDITIONS; backlog priorizado con no-go items visibles.
+- Base de plataforma: modelo de datos inicial y migraciones Alembic (`[B-01]`), stack local Docker Compose (`[P-03]`), CI (`[P-04]`), logs y healthchecks (`[P-05]`).
+- Autenticación y autorización por roles (`Candidate`, `Company`, `Admin`) en backend (`[B-02]`) y shell/rutas protegidas en frontend (`[F-01]`).
+- CRUD base de candidato (`[B-03]`, `[F-02]`), empresa y vacante mediante formulario estructurado (`[B-04]`, `[F-03]`).
+- Taxonomía local curada (~80 skills con referencia ESCO) (`[S-01]`), normalizador (`[S-02]`), perfiles de rol (`[S-03]`), dataset sintético v1 (`[S-04]`) y seed idempotente (`[S-05]`).
+- Narrativa v0 (`[R-03]`), README v1 (`[R-06]`) y Sprint Review A (`[V-01]`).
 
-## Semana 2 — 9–15 noviembre: base de plataforma
+**Salida:** esqueleto andante end-to-end con CRUD protegido y seed reproducible.
 
-- Repo limpio con CI, entorno local y configuración mínima.
-- Esquema inicial de auth, roles, empresas, perfiles y ofertas.
-- API docs, migraciones, tests de autorización.
-- Frontend con los flujos principales vacíos pero navegables.
+## M2 (Semana 4) — 23–29 noviembre: demo v1 del flujo completo
 
-**Salida:** CRUD protegido y reproducible.
+- Alta manual de proyecto y revisión de evidencias (`[S-06]`, `[S-07]`, `[F-04]`).
+- Motor de ficha de encaje por requisito y API de matching con cobertura de evidencia (`[M-01]`, `[M-02]`), más comparador de 3 role cards (`[F-05]`).
+- Consentimiento granular (`[B-05]`), proyección seudonimizada por allowlist y tests de no-filtración (`[B-06]`).
+- Interés idempotente, match mutuo y liberación de contacto verificada en servidor (`[B-07]`, `[F-06]`, `[F-07]`, `[F-08]`, `[F-09]`).
+- Banco de preguntas y rúbrica de entrevista (`[A-04]`), guion de demo v1 (`[R-05]`) y Sprint Review B (`[V-02]`).
 
-## Semana 3 — 16–22 noviembre: datos y matching baseline
+**Salida:** flujo bidireccional completo candidato ↔ empresa con privacidad y explicabilidad sin IA generativa obligatoria.
 
-- Importación controlada de las ofertas aprobadas.
-- Parsing de CV de prueba y GitHub API con fixtures/rate limits.
-- Embeddings y retrieval; primera línea base de ranking con explicaciones calculadas.
-- Dataset sintético y evaluación retrieval/ranking.
+## M3 (Semana 5) — 30 noviembre–7 diciembre: evaluación de IA, RAG y feature freeze
 
-**Salida:** demo de match con evidencia/factores y límites claros.
+- Índice vectorial embebido + señal semántica auxiliar explicada (`[E-01]`, `[M-03]`) y plan de 3 siguientes pasos (`[F-10]`).
+- Dataset sintético v2 (`[S-08]`), Gold set (≥60 pares) con harness `Recall@k / NDCG / MRR` (`[E-02]`) y auditoría de sesgo contrafactual (`[E-04]`).
+- RAG acotado sobre ofertas/empresa autorizadas con citas y refusals (`[A-01]`, `[A-02]`), flujo de entrevista en LangGraph con revisión humana (`[A-03]`, `[A-05]`) y pruebas adversariales (`[A-06]`).
+- Rate limiting, batería IDOR/cross-tenant e informe de seguridad (`[B-09]`, `[E-05]`), prueba E2E Playwright (`[Q-01]`) y documento de gobernanza GDPR / EU AI Act (`[R-01]`).
+- **Hito de corte (`D-10`):** **7 de diciembre — Feature freeze** (no entran nuevas funcionalidades tras esta fecha).
 
-## Semana 4 — 23–29 noviembre: bidireccionalidad, blind hiring, dashboard
+**Salida:** funcionalidades MVP congeladas con evaluación adversarial, métricas de retrieval y gobernanza documentada.
 
-- Interés idempotente y match mutuo con tests negativos.
-- Proyección ciega por allowlist y pruebas de no filtración.
-- Dashboard inicial y logging/audit events.
-- Inicio del documento de gobernanza/riesgos.
+## M4 (Semana 6) — 8–11 diciembre: estabilización, release candidate y defensa
 
-**Salida:** flujo candidate–company completo sin IA generativa obligatoria.
+- **8–9 de diciembre (Estabilización):** corrección de bugs previos al freeze (`[Q-03]`), estabilización de datos de demo (`[Q-04]`), despliegue accesible por URL con rollback (`[P-07]`), prueba en máquina limpia y runbook (`[P-08]`), informe final de reutilización (`[R-02]`) y cierre de documentación (`[R-07]`–`[R-14]`).
+- **10–11 de diciembre (Ensayos y defensa):** ensayos cronometrados con plan B sin LLM (`[R-09]`, `[R-10]`), checklist go/no-go y defensa final ante tribunal.
 
-## Semana 5 — 30 noviembre–6 diciembre: RAG y asistentes
-
-- RAG acotado a información de oferta/empresa autorizada; citas y refusals.
-- Borrador de carta y preparación de entrevista, siempre editable.
-- Redis + worker si hace falta para parsing/embeddings.
-- Apply Copilot solo si milestones P0/P1 ya están estables: demo de formulario controlado y sin auto-submit.
-
-**Salida:** asistente útil con evaluación adversarial mínima.
-
-## Semana 6 — 7–11 diciembre: integración y defensa
-
-- Regression tests, seguridad, privacidad y evaluación de sesgo.
-- CI y Docker comprobados desde máquina limpia; seed sintético reproducible.
-- Informe final de legacy/reutilización, arquitectura/ADRs, model card si aplica y runbook.
-- Ensayo de demo/tribunal y límites conocidos.
-
-**Salida:** demo reproducible que no depende de datos secretos ni de un proveedor que solo funciona en la máquina de una persona.
+**Salida:** demo reproducible con datos 100 % sintéticos y plan de contingencia sin dependencias frágiles.
 
 ## Gating
 
-Si al final de Semana 3 falla CRUD/auth o no hay datos aprobados, posponer Apply Copilot y agentes avanzados. No compensar retrasos introduciendo frameworks de streaming/distribución.
+Si al cierre de `M2` (29 nov.) falla algún flujo P0 de CRUD, seudonimización o match mutuo, se recortan automáticamente las tareas `SHOULD` y `COULD` (`[S-09]`, `[S-10]`, `[E-03]`, `[A-07]`) para proteger la estabilidad del feature freeze del 7 de diciembre. No compensar retrasos introduciendo infraestructura distribuida ni servicios externos adicionales.
