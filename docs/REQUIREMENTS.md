@@ -2,6 +2,8 @@
 
 Estados permitidos: `NOT_STARTED`, `IN_PROGRESS`, `BLOCKED`, `VERIFIED`, `DEFERRED`. No marcar `VERIFIED` sin evidencia de test o demo reproducible.
 
+> **Nota de alcance (`[G-02]`, 20/11/2026):** Requisitos alineados con las decisiones aprobadas `D-01`–`D-11` (`DECISION_LOG.md`) y el backlog `M0`–`M4`. El scraping externo (`FR-005`), el análisis automático de CV PDF (`FR-006`) y Apply Copilot (`FR-020`) quedan fuera del MVP (`DEFERRED`).
+
 ## Funcionales
 
 | ID | Requisito | Criterio de aceptación | Prioridad | Verificación inicial |
@@ -32,29 +34,32 @@ Estados permitidos: `NOT_STARTED`, `IN_PROGRESS`, `BLOCKED`, `VERIFIED`, `DEFERR
 
 | ID | Requisito | Criterio de aceptación | Prioridad |
 |---|---|---|---|
-| NFR-001 | Separación legacy/nuevo | Repos separados; legacy read-only durante auditoría; reutilización mediante registro aprobado | P0 |
-| NFR-002 | Mantenibilidad | Backend modular, type hints, lint, migraciones versionadas, README de ejecución | P0 |
-| NFR-003 | Rendimiento vectorial | p95 <300 ms en retrieval top-k sobre dataset y hardware documentados; medir con datos/consulta definida y warm/cold separado | P1 |
-| NFR-004 | Disponibilidad observable | Health/readiness, logs estructurados, error IDs y métricas básicas; no prometer SLA productivo sin despliegue | P1 |
-| NFR-005 | Seguridad | Autorización del servidor, gestión segura de secretos, límites de tasa, validación de uploads, tests de acceso indebido | P0 |
-| NFR-006 | Privacidad | Minimización, retención limitada, derecho de borrado, acceso por finalidad, datos de prueba sintéticos | P0 |
-| NFR-007 | Equidad | Protocolo de auditoría de sesgos, variables/proxies considerados, límites y mitigaciones documentados | P0 |
-| NFR-008 | Supervisión humana | Resultados informativos, overrides y revisión humana registrables; no decisión laboral autónoma | P0 |
-| NFR-009 | Reproducibilidad | Dataset/versiones/modelos/prompts/configs/versionadas; evaluación repetible | P1 |
-| NFR-010 | CI/CD | CI para test/lint/typecheck/build y scan de dependencias; deploy manual/protegido | P0 |
-| NFR-011 | Accesibilidad/usabilidad | Flujos principales probados en móvil/desktop y navegación por teclado básica | P1 |
+| NFR-001 | Separación legacy/nuevo | Repos separados; legacy read-only durante auditoría; reutilización mediante registro aprobado (`ADR-0001`, `[R-02]`) | P0 |
+| NFR-002 | Mantenibilidad | Backend modular (`FastAPI`), type hints (`mypy`), lint (`ruff`), migraciones versionadas (`Alembic`), README de ejecución (`ADR-0002`) | P0 |
+| NFR-003 | Rendimiento de índice vectorial embebido | Benchmark p95 documentado sobre índice vectorial embebido y dataset sintético definido (`ADR-0003`, `[E-01]`) | P1 |
+| NFR-004 | Disponibilidad observable | Endpoints `/health`, `/ready`, `/version`, logs JSON estructurados con `request-id` (`[P-05]`) | P0 |
+| NFR-005 | Seguridad | Autorización en servidor, gestión segura de secretos, rate limiting y batería de tests IDOR/cross-tenant (`[B-09]`, `[E-05]`) | P0 |
+| NFR-006 | Privacidad | Minimización, seudonimización por allowlist, consentimiento granular y datos de prueba 100 % sintéticos (`D-09`) | P0 |
+| NFR-007 | Equidad y gobernanza IA | Auditoría de sesgos contrafactual (`[E-04]`), registro de sistema IA, GDPR/EU AI Act, matriz ética y model card (`[R-01]`) | P0 |
+| NFR-008 | Supervisión humana | Resultados informativos, overrides y revisión humana registrables; prohibida cualquier decisión laboral autónoma | P0 |
+| NFR-009 | Reproducibilidad | Seed idempotente (`[S-05]`), versiones de taxonomía/reglas/prompts documentadas y evaluación repetible | P1 |
+| NFR-010 | CI/CD | CI en GitHub Actions (`ruff`, `mypy`, `pytest`, `vitest`, `build`, `pip-audit`/`npm audit`, `gitleaks`) y despliegue protegido (`[P-04]`, `[P-06]`, `[P-07]`) | P0 |
+| NFR-011 | Accesibilidad/usabilidad | Flujos principales probados en móvil/desktop y navegación por teclado básica (`[E-07]`) | P1 |
+
 
 ## Entregables de evaluación
 
 - Código modular con pruebas unitarias/integración, tipado y documentación.
-- Pipeline MLOps reproducible con CI y Docker.
-- Informe de gobernanza, privacidad, auditoría de sesgo y riesgos.
-- Evaluación del matching/ranking y model card si se desarrolla un modelo ML entrenado.
-- Demo funcional y guion con datos sintéticos.
-- Informe de auditoría legacy y decisión de reconstrucción.
+- Pipeline MLOps reproducible con CI y Docker.(`compose.yaml`, `Dockerfile`).
+- Informe de gobernanza, privacidad, auditoría de sesgo y riesgos.(`[R-01]`, `[E-04]`, `[E-05]`)
+- Evaluación del matching/ranking (`Gold set` + métricas) y model card si se desarrolla un modelo ML entrenado.(`[E-02]`, `[R-01]`).
+- Demo funcional y guion con datos sintéticos.(`[R-05]`, `[R-10]`).
+- Informe de auditoría legacy y decisión de reconstrucción.(`[R-02]`).
 
 ## Notas de interpretación
 
 - “Porcentaje de afinidad” no debe presentarse como probabilidad de contratación. Definir escala/normalización, calibración y limitaciones.
 - “Modelo de ranking entrenado” no es demostrable sin datos etiquetados, metodología, baseline y evaluación. Si no existe, entregar baseline explicable y registrar qué datos faltan.
 - El umbral de 300 ms debe aclarar qué se mide: retrieval vectorial no incluye extracción PDF, generación de embeddings ni tiempo de respuesta LLM.
+
+
