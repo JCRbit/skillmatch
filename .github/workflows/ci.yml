@@ -1,3 +1,19 @@
+# Continuous integration for SkillMatch.
+#
+# Jobs
+#   docs         broken internal Markdown links
+#   security     fast heuristic secret patterns (kept for continuity)
+#   gitleaks     full secret scan over the Git history
+#   code         backend (ruff, format, mypy, pytest + coverage) and frontend (lint, test, build)
+#   audit        known vulnerabilities in locked runtime dependencies (pip-audit, npm audit)
+#   migrations   Alembic upgrade/downgrade/drift check against a throwaway PostgreSQL
+#   infra        `docker compose config` and a build of the API development image
+#   gate         single required check: succeeds only if every job above succeeded
+#
+# Jobs that depend on code that does not exist yet (frontend, Alembic, compose) report a notice
+# and skip their steps instead of silently passing. Required status checks and local equivalents
+# are documented in docs/CI.md.
+
 name: CI
 
 on:
@@ -6,20 +22,34 @@ on:
   pull_request:
   workflow_dispatch:
 
+# Least privilege: jobs only read the repository. Jobs that need more declare it themselves.
 permissions:
   contents: read
 
+# Cancel superseded runs on pull requests, but let every push to a protected branch finish.
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "22"
+
+defaults:
+  run:
+    # Explicit bash enables `pipefail`; GitHub's implicit default does not.
+    shell: bash
 
 jobs:
   docs:
     name: Docs · enlaces internos
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Verificar que los enlaces internos de Markdown existen
         shell: bash
@@ -60,9 +90,12 @@ jobs:
   security:
     name: Security · escaneo heurístico de secretos
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Buscar patrones de secretos conocidos
         shell: bash
@@ -78,58 +111,276 @@ jobs:
           fi
           echo "OK: sin patrones de secretos conocidos"
 
+  gitleaks:
+    name: Security · gitleaks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Free for personal accounts; organisation accounts need a GITLEAKS_LICENSE secret.
+      # If it flags a harmless placeholder, add a targeted allowlist in .gitleaks.toml
+      # instead of disabling the job.
+      - name: Scan history for secrets
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   code:
     name: Code · lint y tests
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-
-      # Los pasos de código se activan solos cuando exista el árbol de código.
-      # Hoy no hay backend/ ni frontend/: los pasos quedan en skipped, no en passed.
-
-      - name: Backend · preparar Python
-        if: ${{ hashFiles('backend/pyproject.toml') != '' }}
-        uses: actions/setup-python@v5
+        uses: actions/checkout@v7
         with:
-          python-version: '3.12'
+          persist-credentials: false
 
-      - name: Backend · instalar uv
+      # ------------------------------ Backend ------------------------------
+      - name: Backend · note when absent
+        if: ${{ hashFiles('backend/pyproject.toml') == '' }}
+        run: echo "::notice::backend/pyproject.toml not found; backend checks were skipped."
+
+      - name: Backend · set up Python
         if: ${{ hashFiles('backend/pyproject.toml') != '' }}
-        uses: astral-sh/setup-uv@v5
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Backend · install uv
+        if: ${{ hashFiles('backend/pyproject.toml') != '' }}
+        uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
           cache-dependency-glob: backend/uv.lock
 
-      - name: Backend · instalar dependencias (lockfile)
+      # `--locked` fails when uv.lock is missing or stale, which keeps CI reproducible.
+      - name: Backend · install locked dependencies
         if: ${{ hashFiles('backend/pyproject.toml') != '' }}
         working-directory: backend
         run: uv sync --locked
 
-      - name: Backend · ruff, mypy y pytest
+      - name: Backend · lint
         if: ${{ hashFiles('backend/pyproject.toml') != '' }}
         working-directory: backend
-        run: |
-          set -euo pipefail
-          uv run ruff check .
-          uv run ruff format --check .
-          uv run mypy
-          uv run pytest --cov --cov-report=term-missing
+        run: uv run ruff check .
 
-      - name: Frontend · preparar Node
+      - name: Backend · format check
+        if: ${{ hashFiles('backend/pyproject.toml') != '' }}
+        working-directory: backend
+        run: uv run ruff format --check .
+
+      - name: Backend · type check
+        if: ${{ hashFiles('backend/pyproject.toml') != '' }}
+        working-directory: backend
+        run: uv run mypy
+
+      - name: Backend · tests with coverage
+        if: ${{ hashFiles('backend/pyproject.toml') != '' }}
+        working-directory: backend
+        run: uv run pytest --cov --cov-report=term-missing
+
+      - name: Backend · coverage summary
+        if: ${{ always() && hashFiles('backend/pyproject.toml') != '' }}
+        working-directory: backend
+        run: uv run coverage report --format=markdown >> "${GITHUB_STEP_SUMMARY}" || true
+
+      # ------------------------------ Frontend -----------------------------
+      - name: Frontend · note when absent
+        if: ${{ hashFiles('frontend/package.json') == '' }}
+        run: echo "::notice::frontend/package.json not found; frontend checks were skipped."
+
+      - name: Frontend · set up Node
         if: ${{ hashFiles('frontend/package.json') != '' }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
-      - name: Frontend · lint + test + build
+      # `npm ci` installs exactly what package-lock.json says and fails if the two disagree.
+      - name: Frontend · install locked dependencies
         if: ${{ hashFiles('frontend/package.json') != '' }}
         working-directory: frontend
+        run: npm ci
+
+      - name: Frontend · lint
+        if: ${{ hashFiles('frontend/package.json') != '' }}
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Frontend · type check
+        if: ${{ hashFiles('frontend/package.json') != '' }}
+        working-directory: frontend
+        run: npm run typecheck --if-present
+
+      # GitHub sets CI=true, so Vitest runs once instead of starting in watch mode.
+      - name: Frontend · unit tests
+        if: ${{ hashFiles('frontend/package.json') != '' }}
+        working-directory: frontend
+        run: npm test
+
+      - name: Frontend · build
+        if: ${{ hashFiles('frontend/package.json') != '' }}
+        working-directory: frontend
+        run: npm run build
+
+  audit:
+    name: Audit · dependency vulnerabilities
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Backend · install uv
+        if: ${{ hashFiles('backend/uv.lock') != '' }}
+        uses: astral-sh/setup-uv@v7
+
+      # Audits exactly what ships: runtime dependencies resolved in uv.lock, without dev tools.
+      # `--no-deps --disable-pip` stops pip-audit from re-resolving, so the lockfile stays the
+      # single source of truth. `--strict` fails if any package could not be audited.
+      - name: Backend · audit locked runtime dependencies
+        if: ${{ hashFiles('backend/uv.lock') != '' }}
+        working-directory: backend
         run: |
-          set -euo pipefail
-          if [ -f package-lock.json ]; then npm ci; else npm install; fi
-          npm run lint
-          npm test
-          if node -e "process.exit(require('./package.json').scripts && require('./package.json').scripts.build ? 0 : 1)"; then
-            npm run build
-          fi
+          uv export --locked --no-dev --no-emit-project --format requirements-txt \
+            --output-file "${RUNNER_TEMP}/requirements.txt"
+          uvx pip-audit --strict --no-deps --disable-pip \
+            --requirement "${RUNNER_TEMP}/requirements.txt"
+
+      - name: Frontend · set up Node
+        if: ${{ hashFiles('frontend/package-lock.json') != '' }}
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Frontend · audit runtime dependencies
+        if: ${{ hashFiles('frontend/package-lock.json') != '' }}
+        working-directory: frontend
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Note when nothing was audited
+        if: ${{ hashFiles('backend/uv.lock') == '' && hashFiles('frontend/package-lock.json') == '' }}
+        run: echo "::notice::No lockfile found; nothing was audited."
+
+  migrations:
+    name: Database · migrations on a temporary database
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: skillmatch
+          POSTGRES_PASSWORD: ci-throwaway-password
+          POSTGRES_DB: skillmatch_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U skillmatch -d skillmatch_ci"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      # Contract with task B-01: Alembic's env.py must read this variable. The database is created
+      # for this job only and destroyed with it; migrations are never applied anywhere else from CI.
+      SKILLMATCH_DATABASE_URL: postgresql+asyncpg://skillmatch:ci-throwaway-password@localhost:5432/skillmatch_ci
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Note when there are no migrations yet
+        if: ${{ hashFiles('backend/alembic.ini') == '' }}
+        run: echo "::notice::backend/alembic.ini not found (task B-01); migration checks were skipped."
+
+      - name: Set up Python
+        if: ${{ hashFiles('backend/alembic.ini') != '' }}
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        if: ${{ hashFiles('backend/alembic.ini') != '' }}
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Install locked dependencies
+        if: ${{ hashFiles('backend/alembic.ini') != '' }}
+        working-directory: backend
+        run: uv sync --locked
+
+      # Upgrade, full downgrade and upgrade again prove that every migration is reversible and
+      # repeatable on an empty database.
+      - name: Apply, revert and re-apply migrations
+        if: ${{ hashFiles('backend/alembic.ini') != '' }}
+        working-directory: backend
+        run: |
+          uv run alembic upgrade head
+          uv run alembic downgrade base
+          uv run alembic upgrade head
+
+      # Fails when the ORM models and the migrations disagree (a forgotten migration).
+      - name: Check that models and migrations are in sync
+        if: ${{ hashFiles('backend/alembic.ini') != '' }}
+        working-directory: backend
+        run: uv run alembic check
+
+  infra:
+    name: Infra · compose config and image build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Note when there is no compose file
+        if: ${{ hashFiles('compose.yaml') == '' }}
+        run: echo "::notice::compose.yaml not found (task P-03); infra checks were skipped."
+
+      # `.env.example` only holds placeholders, so it is safe to use as the CI environment.
+      - name: Validate the compose file
+        if: ${{ hashFiles('compose.yaml') != '' }}
+        run: |
+          cp .env.example .env
+          docker compose config --quiet
+
+      - name: Build the API development image
+        if: ${{ hashFiles('compose.yaml') != '' }}
+        run: docker compose build api
+
+  gate:
+    name: CI · gate
+    # `always()` is required: without it a failed dependency would skip this job, and GitHub
+    # treats a skipped required check as passing.
+    if: ${{ always() }}
+    needs: [docs, security, gitleaks, code, audit, migrations, infra]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Fail unless every job succeeded
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Job results: ${RESULTS}"
+          for result in ${RESULTS}; do
+            if [ "${result}" != "success" ]; then
+              echo "::error::At least one job finished with '${result}'."
+              exit 1
+            fi
+          done
