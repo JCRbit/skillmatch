@@ -1,0 +1,109 @@
+# Local development stack for SkillMatch (task P-03).
+#
+#   cp .env.example .env        # once; then replace the local-only passwords
+#   docker compose up --build
+#
+# Services
+#   db   PostgreSQL, data kept in the `postgres_data` volume
+#   api  FastAPI backend (backend/Dockerfile, `development` target) with auto-reload
+#   web  Vite dev server from ./frontend (idles until the frontend exists, task P-02)
+#
+# This file is for local development only. It uses development credentials and binds every
+# published port to 127.0.0.1. Production images and deployment are covered by tasks P-06/P-07.
+
+name: skillmatch
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env (copy .env.example)}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env (copy .env.example)}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env (copy .env.example)}
+    ports:
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      # `$$` stops Compose from interpolating; the variables are resolved inside the container.
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+    logging: *default-logging
+
+  api:
+    build:
+      context: ./backend
+      target: development
+      args:
+        UV_VERSION: ${UV_VERSION:-latest}
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SKILLMATCH_ENVIRONMENT: local
+      SKILLMATCH_DEBUG: "true"
+      SKILLMATCH_CORS_ALLOWED_ORIGINS: '["http://localhost:${WEB_PORT:-5173}","http://127.0.0.1:${WEB_PORT:-5173}"]'
+      # Not read by the application yet; consumed once the data model lands (task B-01).
+      # Inside the Compose network the database host is `db`, not `localhost`.
+      SKILLMATCH_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      # Bind mounts from Windows/macOS do not emit file events; poll so --reload still works.
+      WATCHFILES_FORCE_POLLING: "true"
+    ports:
+      - "127.0.0.1:${API_PORT:-8000}:8000"
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/tests:/app/tests
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    init: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    logging: *default-logging
+
+  web:
+    image: node:22-alpine
+    working_dir: /app
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      VITE_API_URL: http://localhost:${API_PORT:-8000}
+      # Same reason as WATCHFILES_FORCE_POLLING: reliable hot reload on bind mounts.
+      CHOKIDAR_USEPOLLING: "true"
+    ports:
+      - "127.0.0.1:${WEB_PORT:-5173}:5173"
+    volumes:
+      - ./frontend:/app
+      # Keep node_modules in a named volume so host binaries never leak into the container.
+      - web_node_modules:/app/node_modules
+    command:
+      - sh
+      - -c
+      - npm ci && npm run dev -- --host 0.0.0.0 --port 5173
+    restart: "no"
+    logging: *default-logging
+
+volumes:
+  postgres_data:
+  web_node_modules:

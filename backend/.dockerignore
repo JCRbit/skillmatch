@@ -1,0 +1,15 @@
+# Keep the build context small and free of local state or secrets.
+.venv/
+__pycache__/
+*.py[cod]
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.env
+.env.*
+!.env.example
+Dockerfile
+.dockerignore
