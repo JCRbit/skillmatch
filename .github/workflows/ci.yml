@@ -47,7 +47,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
@@ -93,7 +93,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
@@ -120,7 +120,7 @@ jobs:
       pull-requests: read
     steps:
       - name: Checkout (full history)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -129,7 +129,7 @@ jobs:
       # If it flags a harmless placeholder, add a targeted allowlist in .gitleaks.toml
       # instead of disabling the job.
       - name: Scan history for secrets
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -139,7 +139,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
@@ -150,13 +150,13 @@ jobs:
 
       - name: Backend · set up Python
         if: ${{ hashFiles('backend/pyproject.toml') != '' }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Backend · install uv
         if: ${{ hashFiles('backend/pyproject.toml') != '' }}
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
           cache-dependency-glob: backend/uv.lock
@@ -199,7 +199,7 @@ jobs:
 
       - name: Frontend · set up Node
         if: ${{ hashFiles('frontend/package.json') != '' }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -238,13 +238,13 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
       - name: Backend · install uv
         if: ${{ hashFiles('backend/uv.lock') != '' }}
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v7
 
       # Audits exactly what ships: runtime dependencies resolved in uv.lock, without dev tools.
       # `--no-deps --disable-pip` stops pip-audit from re-resolving, so the lockfile stays the
@@ -260,7 +260,7 @@ jobs:
 
       - name: Frontend · set up Node
         if: ${{ hashFiles('frontend/package-lock.json') != '' }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -297,7 +297,7 @@ jobs:
       SKILLMATCH_DATABASE_URL: postgresql+asyncpg://skillmatch:ci-throwaway-password@localhost:5432/skillmatch_ci
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
@@ -307,13 +307,13 @@ jobs:
 
       - name: Set up Python
         if: ${{ hashFiles('backend/alembic.ini') != '' }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install uv
         if: ${{ hashFiles('backend/alembic.ini') != '' }}
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
           cache-dependency-glob: backend/uv.lock
@@ -345,7 +345,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
