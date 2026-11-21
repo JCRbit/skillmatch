@@ -54,6 +54,8 @@ Registro de decisiones de arquitectura (ADRs). Las decisiones de producto y proc
 - **Propuesta Integral Bilateral MVP v5.0** — documento rector de alcance y ejecución (externo al repositorio, disponible en el canal del equipo). Origen de las decisiones `D-01`…`D-12`, del backlog `US-01`…`US-18`, del equipo/RACI, de la metodología y de la demo.
 - [DECISION_LOG.md](DECISION_LOG.md) — Decisiones de producto y proceso (`D-01`…`D-12`) con estado, responsable, evidencia y fecha de revisión.
 - [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md) — Snapshot del backlog de producto de la v5.0 (`US-01`…`US-18`, MoSCoW) y Definition of Ready; el tracker vivo está en GitHub Issues/Projects.
+- [NARRATIVE_V0.md](NARRATIVE_V0.md) — Narrativa v0 (problema, propuesta de valor y límites honestos para sesión transversal, `[R-03]`).
+
 
 ## 6. Operación y desarrollo
 
