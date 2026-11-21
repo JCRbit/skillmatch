@@ -9,7 +9,7 @@ from enum import StrEnum
 from functools import lru_cache
 from typing import Self
 
-from pydantic import AliasChoices, Field, model_validator
+from pydantic import AliasChoices, Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -31,6 +31,8 @@ class Settings(BaseSettings):
         debug: Enables verbose diagnostics. Forbidden in production.
         cors_allowed_origins: Browser origins allowed to call the API cross-origin.
         database_url: Database connection string.
+        auth_service_secret: Secret used to sign and verify access tokens.
+        auth_token_ttl_seconds: Lifetime of an issued access token.
     """
 
     model_config = SettingsConfigDict(
@@ -54,6 +56,17 @@ class Settings(BaseSettings):
             "DATABASE_URL",
         ),
     )
+
+    # --- Authentication boundary -------------------------------------------------------
+    # The API never trusts a client-supplied identifier: callers present a bearer token that
+    # this service verifies. See ``skillmatch.core.security``. The secret is not required at
+    # start-up (a missing secret makes every protected request fail with 401), so importing the
+    # settings never breaks; production deployments must set it.
+    auth_service_secret: SecretStr = Field(
+        default=SecretStr(""),
+        description="Secret that signs and verifies access tokens.",
+    )
+    auth_token_ttl_seconds: int = Field(default=900, ge=1)
 
     @model_validator(mode="after")
     def _reject_unsafe_production_settings(self) -> Self:
