@@ -51,6 +51,19 @@ class AuthenticationError(AppError):
     title = "Authentication required"
 
 
+class InvalidCredentialsError(AuthenticationError):
+    """The presented credential is malformed, forged, expired or belongs to an unknown user.
+
+    It is a distinct subclass of :class:`AuthenticationError` so that route handlers and tests can
+    tell "no credential" from "credential that cannot be trusted", while both keep the 401 status.
+    The detail is intentionally generic: it never reveals whether a given user exists.
+    """
+
+    status_code = HTTPStatus.UNAUTHORIZED
+    code = "invalid_credentials"
+    title = "Invalid credentials"
+
+
 class PermissionDeniedError(AppError):
     """The caller is authenticated but not allowed to perform the action."""
 
