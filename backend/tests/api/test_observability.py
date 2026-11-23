@@ -257,3 +257,11 @@ def test_configure_logging_installs_a_single_json_handler() -> None:
     assert len(logger.handlers) == 1
     assert isinstance(logger.handlers[0].formatter, JsonFormatter)
     assert logger.propagate is False
+
+
+def test_configure_logging_defaults_to_info_for_invalid_level() -> None:
+    configure_logging("INVALID")
+
+    logger = logging.getLogger("skillmatch")
+
+    assert logger.level == logging.INFO

@@ -16,6 +16,8 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from skillmatch.core.logging import REQUEST_ID_HEADER
+
 logger = logging.getLogger(__name__)
 
 PROBLEM_JSON = "application/problem+json"
@@ -170,11 +172,22 @@ def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(Exception)
     async def handle_unexpected_error(request: Request, _exc: Exception) -> JSONResponse:
         # The traceback goes to the logs only; the client receives a generic message.
-        logger.exception("Unhandled error while processing %s %s", request.method, request.url.path)
+        request_id = getattr(request.state, "request_id", None)
+
+        logger.exception(
+            "Unhandled error while processing %s %s",
+            request.method,
+            request.url.path,
+            extra={"request_id": request_id} if request_id else {},
+        )
+
+        headers = {REQUEST_ID_HEADER: request_id} if request_id else None
+
         return _problem(
             status=HTTPStatus.INTERNAL_SERVER_ERROR,
             title=AppError.title,
             code=AppError.code,
             detail="An unexpected error occurred.",
             instance=request.url.path,
+            headers=headers,
         )

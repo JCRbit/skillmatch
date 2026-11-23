@@ -103,5 +103,10 @@ def configure_logging(level: str = "INFO") -> None:
     logger = logging.getLogger("skillmatch")
     logger.handlers.clear()
     logger.addHandler(handler)
-    logger.setLevel(level.upper())
+
+    # Fall back to INFO when the configured level is unknown.
+    normalized_level = level.strip().upper()
+    resolved_level = logging.getLevelNamesMapping().get(normalized_level, logging.INFO)
+    logger.setLevel(resolved_level)
+
     logger.propagate = False
