@@ -1,4 +1,3 @@
-
 """Unit tests for the identity authentication service."""
 
 from unittest.mock import AsyncMock, MagicMock
@@ -14,6 +13,7 @@ from skillmatch.modules.identity.schemas import PublicRole, RegisterRequest
 from skillmatch.modules.identity.service import AuthService
 
 TEST_PASSWORD = "test-" + "value-" + "123"
+
 
 @pytest.mark.anyio
 async def test_register_rolls_back_when_email_unique_constraint_fails(
