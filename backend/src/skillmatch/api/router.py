@@ -12,6 +12,9 @@ Breaking changes to a published contract require a new version prefix.
 
 from fastapi import APIRouter
 
+from skillmatch.api import auth
+
 API_V1_PREFIX = "/api/v1"
 
 api_v1_router = APIRouter()
+api_v1_router.include_router(auth.router)

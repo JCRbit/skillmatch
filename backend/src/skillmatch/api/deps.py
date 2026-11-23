@@ -29,16 +29,10 @@ from skillmatch.core.errors import (
     PermissionDeniedError,
 )
 from skillmatch.core.security import InvalidTokenError, verify_token
-from skillmatch.modules.identity.models import User, UserRole
+from skillmatch.modules.identity.models import ACTIVE_ACCOUNT_STATUS, User, UserRole
 
 SettingsDep = Annotated[Settings, Depends(get_settings)]
 """The application settings, resolved once per request."""
-
-ACTIVE_ACCOUNT_STATUS = "active"
-"""Only accounts in this status may authenticate.
-
-Any other value (``suspended``, ``disabled``…) is rejected.
-"""
 
 bearer_scheme = HTTPBearer(auto_error=False)
 """Parses ``Authorization: Bearer <token>``.
