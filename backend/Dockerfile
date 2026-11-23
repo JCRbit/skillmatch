@@ -48,6 +48,8 @@ RUN --mount=type=cache,target=/home/app/.cache/uv,uid=10001,gid=10001 \
 
 # 2) Project sources, installed in editable mode so bind-mounted code is picked up.
 COPY --chown=app:app README.md ./
+COPY --chown=app:app alembic.ini ./alembic.ini
+COPY --chown=app:app alembic ./alembic
 COPY --chown=app:app src ./src
 COPY --chown=app:app tests ./tests
 RUN --mount=type=cache,target=/home/app/.cache/uv,uid=10001,gid=10001 \
