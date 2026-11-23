@@ -1,4 +1,4 @@
-import { renderToStaticMarkup } from 'react-dom/server'
+﻿import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 import { App } from './App'
@@ -18,6 +18,7 @@ function renderAt(path: string, session: AuthSession | null = null): string {
 describe('App shell y rutas protegidas', () => {
   it('carga la portada pública con los accesos de registro y login', () => {
     const html = renderAt('/')
+
     expect(html).toContain('SkillMatch')
     expect(html).toContain('Conecta talento junior con oportunidades reales')
     expect(html).toContain('Iniciar sesión')
@@ -26,13 +27,25 @@ describe('App shell y rutas protegidas', () => {
 
   it('renderiza el formulario de registro con selector de rol talento y empresa', () => {
     const html = renderAt('/register')
+
     expect(html).toContain('Crear cuenta en SkillMatch')
     expect(html).toContain('Talento (Busco oportunidades)')
     expect(html).toContain('Empresa (Publico vacantes)')
+    expect(html).toContain('entre 12 y 128 caracteres')
+  })
+
+  it('muestra el formulario de login sin permitir elegir el rol', () => {
+    const html = renderAt('/login')
+
+    expect(html).toContain('Iniciar sesión')
+    expect(html).toContain('Correo electrónico')
+    expect(html).toContain('Contraseña')
+    expect(html).not.toContain('Espacio de acceso')
   })
 
   it('redirige a /login cuando un usuario no autenticado intenta entrar a una ruta protegida', () => {
     const html = renderAt('/talento')
+
     expect(html).toContain('Iniciar sesión')
     expect(html).not.toContain('Panel del Talento')
   })
@@ -44,6 +57,7 @@ describe('App shell y rutas protegidas', () => {
       email: 'ana@talento.es',
       role: 'talento',
     })
+
     expect(html).toContain('Panel del Talento')
     expect(html).toContain('ana@talento.es')
   })
@@ -52,10 +66,11 @@ describe('App shell y rutas protegidas', () => {
     const html = renderAt('/empresa', {
       accessToken: 'token-de-prueba',
       tokenType: 'bearer',
-      email: 'rr@h@empresa.es',
+      email: 'rr@empresa.es',
       role: 'empresa',
     })
+
     expect(html).toContain('Panel de Empresa')
-    expect(html).toContain('rr@h@empresa.es')
+    expect(html).toContain('rr@empresa.es')
   })
 })
