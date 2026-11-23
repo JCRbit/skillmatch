@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+﻿import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/useAuth'
 import type { UserRole } from '../types/auth'
@@ -18,12 +18,16 @@ export function RegisterPage() {
     setValidationError(null)
 
     const trimmedEmail = email.trim()
+
     if (!trimmedEmail || !trimmedEmail.includes('@')) {
       setValidationError('Introduce un correo electrónico válido.')
       return
     }
-    if (password.length < 8) {
-      setValidationError('La contraseña debe tener al menos 8 caracteres.')
+
+    if (password.length < 12 || password.length > 128) {
+      setValidationError(
+        'La contraseña debe tener entre 12 y 128 caracteres.',
+      )
       return
     }
 
@@ -33,6 +37,7 @@ export function RegisterPage() {
         password,
         role,
       })
+
       navigate(assignedRole === 'empresa' ? '/empresa' : '/talento', {
         replace: true,
       })
@@ -46,6 +51,7 @@ export function RegisterPage() {
   return (
     <section className="auth-card">
       <h1>Crear cuenta en SkillMatch</h1>
+
       <p className="muted">
         Elige tu perfil para acceder al espacio de trabajo correspondiente.
       </p>
@@ -53,6 +59,7 @@ export function RegisterPage() {
       <form onSubmit={handleSubmit} className="auth-form" noValidate>
         <fieldset className="role-selector">
           <legend>Tipo de cuenta</legend>
+
           <label className="role-option">
             <input
               type="radio"
@@ -63,6 +70,7 @@ export function RegisterPage() {
             />
             <span>Talento (Busco oportunidades)</span>
           </label>
+
           <label className="role-option">
             <input
               type="radio"
@@ -89,13 +97,14 @@ export function RegisterPage() {
         </label>
 
         <label className="field">
-          <span>Contraseña (mínimo 8 caracteres)</span>
+          <span>Contraseña (entre 12 y 128 caracteres)</span>
           <input
             type="password"
             name="password"
             autoComplete="new-password"
-            placeholder="••••••••"
-            minLength={8}
+            placeholder="••••••••••••"
+            minLength={12}
+            maxLength={128}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required

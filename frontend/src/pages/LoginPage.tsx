@@ -1,7 +1,6 @@
-import { useState, type FormEvent } from 'react'
+﻿import { useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/useAuth'
-import type { UserRole } from '../types/auth'
 
 interface LocationState {
   from?: string
@@ -13,11 +12,9 @@ export function LoginPage() {
   const location = useLocation()
 
   const state = (location.state as LocationState | null) ?? null
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [role, setRole] = useState<UserRole>(
-    state?.from === '/empresa' ? 'empresa' : 'talento',
-  )
   const [validationError, setValidationError] = useState<string | null>(null)
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -26,6 +23,7 @@ export function LoginPage() {
     setValidationError(null)
 
     const trimmedEmail = email.trim()
+
     if (!trimmedEmail || !password) {
       setValidationError('Completa tu correo electrónico y contraseña.')
       return
@@ -35,14 +33,17 @@ export function LoginPage() {
       const assignedRole = await login({
         email: trimmedEmail,
         password,
-        role,
       })
+
+      const roleHome = assignedRole === 'empresa' ? '/empresa' : '/talento'
+      const requestedDestination = state?.from
+
       const destination =
-        state?.from && state.from !== '/login'
-          ? state.from
-          : assignedRole === 'empresa'
-            ? '/empresa'
-            : '/talento'
+        requestedDestination === roleHome ||
+        requestedDestination?.startsWith(`${roleHome}/`)
+          ? requestedDestination
+          : roleHome
+
       navigate(destination, { replace: true })
     } catch {
       // Error state is already stored in AuthContext
@@ -54,6 +55,7 @@ export function LoginPage() {
   return (
     <section className="auth-card">
       <h1>Iniciar sesión</h1>
+
       <p className="muted">
         Accede a tu espacio protegido de SkillMatch con tu correo y contraseña.
       </p>
@@ -83,18 +85,6 @@ export function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-        </label>
-
-        <label className="field">
-          <span>Espacio de acceso</span>
-          <select
-            name="role"
-            value={role}
-            onChange={(e) => setRole(e.target.value as UserRole)}
-          >
-            <option value="talento">Talento</option>
-            <option value="empresa">Empresa</option>
-          </select>
         </label>
 
         {activeError ? (

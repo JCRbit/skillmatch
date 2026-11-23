@@ -14,12 +14,16 @@ function readStoredSession(): AuthSession | null {
   if (typeof window === 'undefined' || !window.localStorage) {
     return null
   }
+
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY)
+
     if (!raw) {
       return null
     }
+
     const parsed = JSON.parse(raw) as Partial<AuthSession>
+
     if (
       typeof parsed.accessToken === 'string' &&
       typeof parsed.email === 'string' &&
@@ -36,6 +40,7 @@ function readStoredSession(): AuthSession | null {
   } catch {
     // Ignore malformed storage entries
   }
+
   return null
 }
 
@@ -43,6 +48,7 @@ function persistSession(session: AuthSession | null): void {
   if (typeof window === 'undefined' || !window.localStorage) {
     return
   }
+
   try {
     if (session) {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(session))
@@ -73,21 +79,26 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
   const login = useCallback(async (payload: LoginPayload): Promise<UserRole> => {
     setIsLoading(true)
     setError(null)
+
     try {
       const token = await loginUser(payload)
-      const resolvedRole: UserRole = payload.role ?? 'talento'
+
       const nextSession: AuthSession = {
         accessToken: token.access_token,
         tokenType: token.token_type,
-        email: payload.email.trim(),
-        role: resolvedRole,
+        email: token.user.email,
+        role: token.user.role,
+        userId: token.user.id,
       }
+
       setSession(nextSession)
       persistSession(nextSession)
-      return resolvedRole
+
+      return token.user.role
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'No se pudo iniciar sesión'
+
       setError(message)
       throw err
     } finally {
@@ -99,26 +110,31 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
     async (payload: RegisterPayload): Promise<UserRole> => {
       setIsLoading(true)
       setError(null)
+
       try {
-        const created = await registerUser(payload)
+        await registerUser(payload)
+
         const token = await loginUser({
           email: payload.email,
           password: payload.password,
-          role: payload.role,
         })
+
         const nextSession: AuthSession = {
           accessToken: token.access_token,
           tokenType: token.token_type,
-          email: payload.email.trim(),
-          role: payload.role,
-          userId: created.user_id,
+          email: token.user.email,
+          role: token.user.role,
+          userId: token.user.id,
         }
+
         setSession(nextSession)
         persistSession(nextSession)
-        return payload.role
+
+        return token.user.role
       } catch (err) {
         const message =
           err instanceof Error ? err.message : 'No se pudo registrar la cuenta'
+
         setError(message)
         throw err
       } finally {
