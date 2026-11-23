@@ -1,36 +1,99 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import { getHealth } from './client'
+﻿import { afterEach, describe, expect, it, vi } from 'vitest'
+import { getHealth, loginUser, registerUser } from './client'
 
-describe('getHealth', () => {
-  afterEach(() => {
-    vi.unstubAllGlobals()
+const testPassword = 'test-password'
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
+
+describe('cliente HTTP de SkillMatch', () => {
+  it('devuelve el estado de /health cuando la API responde 200', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        status: 'ok',
+        service: 'SkillMatch API',
+        version: '0.1.0',
+      }),
+    } as Response)
+
+    const result = await getHealth()
+
+    expect(result.status).toBe('ok')
   })
 
-  it('returns the health response when the API succeeds', async () => {
-    const mockFetch = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ status: 'ok' }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
+  it('envía JSON a /api/v1/auth/register y recibe el usuario creado', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        id: 1,
+        email: 'talento@example.com',
+        role: 'talento',
+        status: 'active',
+        created_at: '2026-11-23T15:00:00Z',
+      }),
+    } as Response)
+
+    const payload = {
+      email: 'talento@example.com',
+      password: testPassword,
+      role: 'talento' as const,
+    }
+
+    const result = await registerUser(payload)
+
+    expect(result.id).toBe(1)
+    expect(result.email).toBe(payload.email)
+    expect(result.role).toBe('talento')
+
+    expect(fetchSpy).toHaveBeenCalledWith(
+      'http://localhost:8000/api/v1/auth/register',
+      expect.objectContaining({
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
       }),
     )
-
-    vi.stubGlobal('fetch', mockFetch)
-
-    await expect(getHealth()).resolves.toEqual({ status: 'ok' })
-    expect(mockFetch).toHaveBeenCalledWith(
-      'http://localhost:8000/health',
-    )
   })
 
-  it('throws an error when the API responds with an HTTP error', async () => {
-    const mockFetch = vi.fn().mockResolvedValue(
-      new Response(null, { status: 500 }),
-    )
+  it('envía JSON a /api/v1/auth/login y recibe el token con la identidad', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        access_token: 'jwt-token',
+        token_type: 'bearer',
+        expires_in: 3600,
+        user: {
+          id: 1,
+          email: 'talento@example.com',
+          role: 'talento',
+        },
+      }),
+    } as Response)
 
-    vi.stubGlobal('fetch', mockFetch)
+    const payload = {
+      email: 'talento@example.com',
+      password: testPassword,
+    }
 
-    await expect(getHealth()).rejects.toThrow(
-      'Error al consultar la API: 500',
+    const result = await loginUser(payload)
+
+    expect(result.access_token).toBe('jwt-token')
+    expect(result.user.id).toBe(1)
+    expect(result.user.role).toBe('talento')
+
+    expect(fetchSpy).toHaveBeenCalledWith(
+      'http://localhost:8000/api/v1/auth/login',
+      expect.objectContaining({
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      }),
     )
   })
 })
