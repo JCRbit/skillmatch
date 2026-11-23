@@ -7,19 +7,29 @@ export interface RegisterPayload {
 }
 
 export interface RegisterResponse {
-  user_id: number
-  message: string
+  id: number
+  email: string
+  role: UserRole
+  status: string
+  created_at: string
 }
 
 export interface LoginPayload {
   email: string
   password: string
-  role?: UserRole
+}
+
+export interface AuthenticatedUser {
+  id: number
+  email: string
+  role: UserRole
 }
 
 export interface TokenResponse {
   access_token: string
-  token_type: string
+  token_type: 'bearer'
+  expires_in: number
+  user: AuthenticatedUser
 }
 
 export interface AuthSession {

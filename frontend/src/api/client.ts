@@ -13,20 +13,28 @@ const API_V1_URL = `${API_BASE_URL}/api/v1`
 
 interface FastApiErrorBody {
   detail?: string | Array<{ msg?: string }>
+  title?: string
 }
 
 async function extractApiError(response: Response, fallback: string): Promise<string> {
   try {
     const data = (await response.json()) as FastApiErrorBody
+
     if (typeof data.detail === 'string' && data.detail.trim().length > 0) {
       return data.detail
     }
+
     if (Array.isArray(data.detail) && data.detail[0]?.msg) {
       return data.detail[0].msg
+    }
+
+    if (typeof data.title === 'string' && data.title.trim().length > 0) {
+      return data.title
     }
   } catch {
     // Ignore non-JSON error bodies and use fallback
   }
+
   return fallback
 }
 
@@ -61,22 +69,18 @@ export async function registerUser(payload: RegisterPayload): Promise<RegisterRe
 }
 
 export async function loginUser(payload: LoginPayload): Promise<TokenResponse> {
-  const formBody = new URLSearchParams()
-  formBody.set('username', payload.email)
-  formBody.set('password', payload.password)
-
   const response = await fetch(`${API_V1_URL}/auth/login`, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Type': 'application/json',
     },
-    body: formBody.toString(),
+    body: JSON.stringify(payload),
   })
 
   if (!response.ok) {
     const message = await extractApiError(
       response,
-      `Credenciales inválidas (${response.status})`,
+      `No se pudo iniciar sesión (${response.status})`,
     )
     throw new Error(message)
   }
