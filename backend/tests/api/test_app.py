@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+from pydantic import SecretStr
 
 from skillmatch import __version__
 from skillmatch.api.deps import SettingsDep
@@ -14,7 +15,9 @@ def test_openapi_schema_exposes_the_service_version(client: TestClient) -> None:
 
 
 def test_api_documentation_is_not_exposed_in_production() -> None:
-    app = create_app(Settings(environment=Environment.PRODUCTION))
+    app = create_app(
+        Settings(environment=Environment.PRODUCTION, auth_service_secret=SecretStr("s" * 32))
+    )
 
     with TestClient(app) as production_client:
         assert production_client.get("/docs").status_code == 404

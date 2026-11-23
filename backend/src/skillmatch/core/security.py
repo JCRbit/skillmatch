@@ -8,10 +8,10 @@ The credential is a compact JWS signed with HMAC-SHA256 using a secret that only
 (``SKILLMATCH_AUTH_SERVICE_SECRET``). The token carries the subject (``sub``), the role and the
 expiry (``exp``); a client cannot forge one, and editing its payload invalidates the signature.
 
-This keeps the authentication boundary trustworthy while the user-facing login flow (password
-hashing + session persistence) is still out of scope: the service issues the token after its own
-login step, and every request must present it. Swapping in an OIDC provider later only means
-replacing :func:`verify_token`; the rest of the API does not change.
+This keeps the authentication boundary trustworthy: the login service verifies the stored
+password hash and issues the token, while every protected request must present it. Swapping in
+an OIDC provider later only means replacing :func:`verify_token`; the rest of the API does not
+change.
 
 Verification returns the token *claims*. Resolving those claims to a live user record is the job
 of :func:`skillmatch.api.deps.get_current_user`, which is what makes the role and the account
@@ -21,6 +21,7 @@ Secrets are read from settings and must never be committed.
 """
 
 import base64
+import binascii
 import hashlib
 import hmac
 import json
@@ -32,6 +33,14 @@ from skillmatch.core.config import Settings
 
 SIGNING_ALGORITHM: Final = "HS256"
 """Algorithm used to sign and verify access tokens."""
+
+_MAX_TOKEN_LENGTH: Final = 4096
+"""Maximum accepted length of a compact access token in characters."""
+
+_BASE64URL_ALPHABET: Final = frozenset(
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+)
+"""Characters permitted in an unpadded Base64url segment."""
 
 
 class InvalidTokenError(Exception):
@@ -61,15 +70,26 @@ def _b64url_encode(data: bytes) -> str:
 
 
 def _b64url_decode(segment: str) -> bytes:
-    """Decode an unpadded base64url segment.
+    """Decode a strictly validated, unpadded base64url segment.
 
     Raises:
         InvalidTokenError: The segment is not valid base64url.
     """
+    if (
+        not segment
+        or len(segment) % 4 == 1
+        or any(character not in _BASE64URL_ALPHABET for character in segment)
+    ):
+        raise InvalidTokenError("El token no está correctamente codificado.")
+
     padding = "=" * (-len(segment) % 4)
     try:
-        return base64.urlsafe_b64decode(segment + padding)
-    except (ValueError, TypeError) as exc:
+        return base64.b64decode(
+            (segment + padding).encode("ascii"),
+            altchars=b"-_",
+            validate=True,
+        )
+    except (binascii.Error, ValueError, TypeError) as exc:
         raise InvalidTokenError("El token no está correctamente codificado.") from exc
 
 
@@ -120,6 +140,9 @@ def create_service_token(
 
 def _verify_service_token(token: str, secret: str, now: int | None = None) -> TokenClaims:
     """Verify a token signed by this service with HMAC-SHA256."""
+    if len(token) > _MAX_TOKEN_LENGTH:
+        raise InvalidTokenError("El token supera el tamaño máximo permitido.")
+
     parts = token.split(".")
     if len(parts) != 3:
         raise InvalidTokenError("El token no tiene el formato esperado.")
@@ -165,8 +188,14 @@ def _claims_from_payload(payload: dict[str, Any], *, now: int | None = None) -> 
     if not isinstance(subject, str) or not subject.strip():
         raise InvalidTokenError("El token no identifica a ningún usuario.")
 
+    issued_at = payload.get("iat")
+    if isinstance(issued_at, bool) or not isinstance(issued_at, int) or issued_at < 0:
+        raise InvalidTokenError("El token no indica una fecha de emisión válida.")
+    if issued_at > current_time:
+        raise InvalidTokenError("El token tiene una fecha de emisión futura.")
+
     expires_at = payload.get("exp")
-    if not isinstance(expires_at, int):
+    if isinstance(expires_at, bool) or not isinstance(expires_at, int):
         raise InvalidTokenError("El token no indica su fecha de expiración.")
     if expires_at <= current_time:
         raise InvalidTokenError("El token ha expirado.")

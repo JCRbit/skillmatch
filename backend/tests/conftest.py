@@ -1,3 +1,4 @@
+import logging
 import os
 from collections.abc import Iterator
 from pathlib import Path
@@ -36,3 +37,15 @@ def client(app: FastAPI) -> Iterator[TestClient]:
     """HTTP client that also runs the application lifespan."""
     with TestClient(app) as test_client:
         yield test_client
+
+
+@pytest.fixture(autouse=True)
+def suppress_sqlite_parameter_logs() -> Iterator[None]:
+    """Prevent aiosqlite DEBUG logs from exposing SQL parameters."""
+    logger = logging.getLogger("aiosqlite")
+    previous_level = logger.level
+    logger.setLevel(logging.WARNING)
+    try:
+        yield
+    finally:
+        logger.setLevel(previous_level)
