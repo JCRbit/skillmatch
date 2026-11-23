@@ -33,6 +33,8 @@ class Settings(BaseSettings):
         database_url: Database connection string.
         auth_service_secret: Secret used to sign and verify access tokens.
         auth_token_ttl_seconds: Lifetime of an issued access token.
+        log_level: Minimum level for the JSON application logs.
+        git_sha: Commit the running image was built from.
     """
 
     model_config = SettingsConfigDict(
@@ -48,7 +50,7 @@ class Settings(BaseSettings):
     debug: bool = False
     cors_allowed_origins: list[str] = Field(default_factory=list)
 
-    # Añadido: Lee SKILLMATCH_DATABASE_URL o DATABASE_URL (del .env)
+    # AÃ±adido: Lee SKILLMATCH_DATABASE_URL o DATABASE_URL (del .env)
     database_url: str = Field(  # type: ignore[pydantic-alias]
         default="postgresql+asyncpg://postgres:postgres@localhost:5432/skillmatch",
         validation_alias=AliasChoices(
@@ -67,6 +69,15 @@ class Settings(BaseSettings):
         description="Secret that signs and verifies access tokens.",
     )
     auth_token_ttl_seconds: int = Field(default=900, ge=1)
+
+    # --- Observability (task P-05) ------------------------------------------------------
+    # Logs are emitted as JSON at this level. Kept as a plain string so an invalid value never
+    # stops the application from starting.
+    log_level: str = "INFO"
+
+    # Commit the image was built from. The production Dockerfile sets SKILLMATCH_GIT_SHA from the
+    # build argument; "unknown" is honest about a local run, where there is no build metadata.
+    git_sha: str = "unknown"
 
     @model_validator(mode="after")
     def _reject_unsafe_production_settings(self) -> Self:
