@@ -11,6 +11,7 @@ from alembic import context
 # --- CAMBIO 1: Importar nuestra Base y la URL ---
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 from skillmatch.core.database import DATABASE_URL, Base
+from skillmatch.modules.candidates.models import CandidateProfile, CandidateSkill  # noqa: F401
 from skillmatch.modules.identity.models import User  # noqa: F401
 
 # ------------------------------------------------
