@@ -70,7 +70,11 @@ CANDIDATE_OPERATIONS = [
     ("/api/v1/candidates/me/visibility", "put", {"200", "401", "403", "404", "422"}),
     ("/api/v1/candidates/me/skills", "get", {"200", "401", "403", "404"}),
     ("/api/v1/candidates/me/skills", "post", {"201", "401", "403", "404", "409", "422"}),
-    ("/api/v1/candidates/me/skills/{skill_id}", "patch", {"200", "401", "403", "404", "409", "422"}),
+    (
+        "/api/v1/candidates/me/skills/{skill_id}",
+        "patch",
+        {"200", "401", "403", "404", "409", "422"},
+    ),
     ("/api/v1/candidates/me/skills/{skill_id}", "delete", {"204", "401", "403", "404"}),
 ]
 
