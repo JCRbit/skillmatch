@@ -1,0 +1,211 @@
+"""HTTP endpoints of the candidate: own profile, preferences, visibility and declared skills.
+
+====================================  ======  ==================================================
+Endpoint                              Access  Purpose
+====================================  ======  ==================================================
+``POST   /candidates/me``             talent  Create the caller's profile.
+``GET    /candidates/me``             talent  Read it.
+``PATCH  /candidates/me``             talent  Change some of its fields.
+``DELETE /candidates/me``             talent  Delete it and its skills (the account stays).
+``PUT    /candidates/me/preferences`` talent  Replace the preferences.
+``PUT    /candidates/me/visibility``  talent  Set the visibility flags.
+``GET    /candidates/me/skills``      talent  List the declared skills.
+``POST   /candidates/me/skills``      talent  Declare a skill.
+``PATCH  /candidates/me/skills/{id}`` talent  Change a skill.
+``DELETE /candidates/me/skills/{id}`` talent  Remove a skill.
+====================================  ======  ==================================================
+
+There is no identifier of a candidate anywhere in these URLs or bodies: the profile is always the
+one of the authenticated user (:data:`TalentDep`). The only client-supplied identifier is a skill
+id, and it is checked with :func:`skillmatch.api.deps.verify_resource_ownership` before use.
+"""
+
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Path, status
+
+from skillmatch.api.deps import SessionDep, require_roles, verify_resource_ownership
+from skillmatch.api.problems import problem_responses
+from skillmatch.modules.candidates.schemas import (
+    CandidateProfileCreate,
+    CandidateProfileRead,
+    CandidateProfileUpdate,
+    PreferencesRead,
+    PreferencesUpdate,
+    SkillCreate,
+    SkillRead,
+    SkillUpdate,
+    VisibilityRead,
+    VisibilityUpdate,
+)
+from skillmatch.modules.candidates.service import CandidateService
+from skillmatch.modules.identity.models import User, UserRole
+
+router = APIRouter(prefix="/candidates", tags=["candidates"])
+
+TalentDep = Annotated[User, Depends(require_roles(UserRole.TALENTO))]
+"""The authenticated candidate. Any other role is answered with ``403 permission_denied``."""
+
+_MAX_DB_INTEGER = 2_147_483_647
+SkillIdPath = Annotated[int, Path(ge=1, le=_MAX_DB_INTEGER, description="Id of a declared skill.")]
+"""Path parameter of a skill; bounded so it always fits the database integer type."""
+
+
+def get_candidate_service(session: SessionDep) -> CandidateService:
+    """Build the :class:`CandidateService` for one request."""
+    return CandidateService(session)
+
+
+CandidateServiceDep = Annotated[CandidateService, Depends(get_candidate_service)]
+"""The candidate service of the current request."""
+
+
+# --------------------------------------------------------------------------- profile
+@router.post(
+    "/me",
+    status_code=status.HTTP_201_CREATED,
+    summary="Create my candidate profile",
+    responses=problem_responses(401, 403, 409, 422),
+)
+async def create_profile(
+    body: CandidateProfileCreate, current_user: TalentDep, service: CandidateServiceDep
+) -> CandidateProfileRead:
+    """Create the caller's profile.
+
+    A new profile is private (not discoverable, location hidden) and has no preferences. A
+    candidate has at most one profile.
+    """
+    profile = await service.create_profile(current_user.id, body)
+    return CandidateProfileRead.from_profile(profile)
+
+
+@router.get(
+    "/me",
+    summary="Read my candidate profile",
+    responses=problem_responses(401, 403, 404),
+)
+async def read_profile(
+    current_user: TalentDep, service: CandidateServiceDep
+) -> CandidateProfileRead:
+    """Return the caller's own profile, preferences and visibility flags."""
+    profile = await service.get_profile(current_user.id)
+    return CandidateProfileRead.from_profile(profile)
+
+
+@router.patch(
+    "/me",
+    summary="Update my candidate profile",
+    responses=problem_responses(401, 403, 404, 422),
+)
+async def update_profile(
+    body: CandidateProfileUpdate, current_user: TalentDep, service: CandidateServiceDep
+) -> CandidateProfileRead:
+    """Change only the profile fields present in the body."""
+    profile = await service.update_profile(current_user.id, body)
+    return CandidateProfileRead.from_profile(profile)
+
+
+@router.delete(
+    "/me",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete my candidate profile",
+    responses=problem_responses(401, 403, 404),
+)
+async def delete_profile(current_user: TalentDep, service: CandidateServiceDep) -> None:
+    """Delete the profile with its skills, preferences and visibility flags.
+
+    The account is not deleted and the candidate can create a new profile afterwards.
+    """
+    await service.delete_profile(current_user.id)
+
+
+# --------------------------------------------------------- preferences and visibility
+@router.put(
+    "/me/preferences",
+    summary="Replace my preferences",
+    responses=problem_responses(401, 403, 404, 422),
+)
+async def replace_preferences(
+    body: PreferencesUpdate, current_user: TalentDep, service: CandidateServiceDep
+) -> PreferencesRead:
+    """Replace work modes, contract types, preferred locations and interests."""
+    profile = await service.replace_preferences(current_user.id, body)
+    return PreferencesRead.model_validate(profile)
+
+
+@router.put(
+    "/me/visibility",
+    summary="Set my visibility flags",
+    responses=problem_responses(401, 403, 404, 422),
+)
+async def replace_visibility(
+    body: VisibilityUpdate, current_user: TalentDep, service: CandidateServiceDep
+) -> VisibilityRead:
+    """Set whether the profile is discoverable and whether the city may be shown."""
+    profile = await service.replace_visibility(current_user.id, body)
+    return VisibilityRead.model_validate(profile)
+
+
+# ------------------------------------------------------------------------- skills
+@router.get(
+    "/me/skills",
+    summary="List my declared skills",
+    responses=problem_responses(401, 403, 404),
+)
+async def list_skills(current_user: TalentDep, service: CandidateServiceDep) -> list[SkillRead]:
+    """Return the caller's declared skills ordered by name."""
+    skills = await service.list_skills(current_user.id)
+    return [SkillRead.from_skill(skill) for skill in skills]
+
+
+@router.post(
+    "/me/skills",
+    status_code=status.HTTP_201_CREATED,
+    summary="Declare a skill",
+    responses=problem_responses(401, 403, 404, 409, 422),
+)
+async def add_skill(
+    body: SkillCreate, current_user: TalentDep, service: CandidateServiceDep
+) -> SkillRead:
+    """Declare a skill. Names are unique per candidate, ignoring capitalisation."""
+    skill = await service.add_skill(current_user.id, body)
+    return SkillRead.from_skill(skill)
+
+
+@router.patch(
+    "/me/skills/{skill_id}",
+    summary="Update a declared skill",
+    responses=problem_responses(401, 403, 404, 409, 422),
+)
+async def update_skill(
+    skill_id: SkillIdPath,
+    body: SkillUpdate,
+    current_user: TalentDep,
+    service: CandidateServiceDep,
+) -> SkillRead:
+    """Change the name and/or level of one of the caller's skills.
+
+    A skill that does not exist and a skill of another candidate both answer ``404``.
+    """
+    owner_id = await service.get_skill_owner_id(skill_id)
+    verify_resource_ownership(owner_id, current_user, hide_if_unauthorized=True)
+    skill = await service.update_skill(skill_id, current_user.id, body)
+    return SkillRead.from_skill(skill)
+
+
+@router.delete(
+    "/me/skills/{skill_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Remove a declared skill",
+    responses=problem_responses(401, 403, 404),
+)
+async def delete_skill(
+    skill_id: SkillIdPath, current_user: TalentDep, service: CandidateServiceDep
+) -> None:
+    """Remove one of the caller's skills.
+
+    A skill that does not exist and a skill of another candidate both answer ``404``.
+    """
+    owner_id = await service.get_skill_owner_id(skill_id)
+    verify_resource_ownership(owner_id, current_user, hide_if_unauthorized=True)
+    await service.delete_skill(skill_id, current_user.id)
