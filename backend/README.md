@@ -42,6 +42,8 @@ Settings are read from environment variables prefixed with `SKILLMATCH_` or from
 | `SKILLMATCH_ENVIRONMENT` | `local` | `local`, `test`, `staging` or `production` |
 | `SKILLMATCH_DEBUG` | `false` | Must stay `false` in `production` (enforced at start-up) |
 | `SKILLMATCH_CORS_ALLOWED_ORIGINS` | `[]` | JSON list, e.g. `["http://localhost:5173"]`; `*` is rejected in `production` |
+| `SKILLMATCH_AUTH_SERVICE_SECRET` | empty | Signs access tokens; at least 32 characters and **required** in `staging` and `production`. Empty: login answers 503 |
+| `SKILLMATCH_AUTH_TOKEN_TTL_SECONDS` | `900` | Lifetime of an access token |
 
 ## Project layout
 

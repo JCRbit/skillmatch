@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pytest
-from pydantic import ValidationError
+from pydantic import SecretStr, ValidationError
 
 from skillmatch.core.config import Environment, Settings, get_settings
 
@@ -17,6 +17,7 @@ def test_defaults_are_safe_for_local_development() -> None:
 
 def test_environment_variables_override_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("SKILLMATCH_ENVIRONMENT", "staging")
+    monkeypatch.setenv("SKILLMATCH_AUTH_SERVICE_SECRET", "s" * 32)
     monkeypatch.setenv("SKILLMATCH_CORS_ALLOWED_ORIGINS", '["http://localhost:5173"]')
 
     settings = Settings()
@@ -39,7 +40,9 @@ def test_settings_are_immutable() -> None:
 
 
 def test_docs_are_disabled_in_production() -> None:
-    assert Settings(environment=Environment.PRODUCTION).docs_enabled is False
+    settings = Settings(environment=Environment.PRODUCTION, auth_service_secret=SecretStr("s" * 32))
+
+    assert settings.docs_enabled is False
 
 
 def test_debug_is_rejected_in_production() -> None:

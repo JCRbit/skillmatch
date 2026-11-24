@@ -7,10 +7,13 @@ environment variables locally and the CI secret store in pipelines.
 
 from enum import StrEnum
 from functools import lru_cache
-from typing import Self
+from typing import Final, Self
 
-from pydantic import AliasChoices, Field, model_validator
+from pydantic import AliasChoices, Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+AUTH_SECRET_MIN_LENGTH: Final = 32
+"""Minimum length of the token signing secret in staging and production (HS256 needs 256 bits)."""
 
 
 class Environment(StrEnum):
@@ -31,6 +34,8 @@ class Settings(BaseSettings):
         debug: Enables verbose diagnostics. Forbidden in production.
         cors_allowed_origins: Browser origins allowed to call the API cross-origin.
         database_url: Database connection string.
+        auth_service_secret: Secret used to sign and verify access tokens.
+        auth_token_ttl_seconds: Lifetime of an issued access token, in seconds.
     """
 
     model_config = SettingsConfigDict(
@@ -55,6 +60,17 @@ class Settings(BaseSettings):
         ),
     )
 
+    # --- Authentication boundary -------------------------------------------------------
+    # The API never trusts a client-supplied identifier: callers present a bearer token that
+    # this service verifies. See ``skillmatch.core.security``. The secret is not required at
+    # start-up (a missing secret makes every protected request fail with 401), so importing the
+    # settings never breaks; production deployments must set it.
+    auth_service_secret: SecretStr = Field(
+        default=SecretStr(""),
+        description="Secret that signs and verifies access tokens.",
+    )
+    auth_token_ttl_seconds: int = Field(default=900, ge=1)
+
     @model_validator(mode="after")
     def _reject_unsafe_production_settings(self) -> Self:
         """Fail fast at start-up instead of running insecurely in production."""
@@ -65,6 +81,15 @@ class Settings(BaseSettings):
             if "*" in self.cors_allowed_origins:
                 msg = "wildcard CORS origins are not allowed in production"
                 raise ValueError(msg)
+        if (
+            self.environment in {Environment.STAGING, Environment.PRODUCTION}
+            and len(self.auth_service_secret.get_secret_value()) < AUTH_SECRET_MIN_LENGTH
+        ):
+            msg = (
+                "SKILLMATCH_AUTH_SERVICE_SECRET must be set to at least "
+                f"{AUTH_SECRET_MIN_LENGTH} characters in staging and production"
+            )
+            raise ValueError(msg)
         return self
 
     @property
