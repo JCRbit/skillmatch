@@ -52,10 +52,12 @@ services:
     environment:
       SKILLMATCH_ENVIRONMENT: local
       SKILLMATCH_DEBUG: "true"
+      # Signs access tokens. Without it, login answers 503 instead of issuing unsigned tokens.
+      SKILLMATCH_AUTH_SERVICE_SECRET: ${SKILLMATCH_AUTH_SERVICE_SECRET:-}
       SKILLMATCH_CORS_ALLOWED_ORIGINS: '["http://localhost:${WEB_PORT:-5173}","http://127.0.0.1:${WEB_PORT:-5173}"]'
-      # Not read by the application yet; consumed once the data model lands (task B-01).
+      # The application uses an async engine, so the driver must be asyncpg (see pyproject.toml).
       # Inside the Compose network the database host is `db`, not `localhost`.
-      SKILLMATCH_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      SKILLMATCH_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       # Bind mounts from Windows/macOS do not emit file events; poll so --reload still works.
       WATCHFILES_FORCE_POLLING: "true"
     ports:

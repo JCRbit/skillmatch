@@ -7,10 +7,13 @@ environment variables locally and the CI secret store in pipelines.
 
 from enum import StrEnum
 from functools import lru_cache
-from typing import Self
+from typing import Final, Self
 
 from pydantic import AliasChoices, Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+AUTH_SECRET_MIN_LENGTH: Final = 32
+"""Minimum length of the token signing secret in staging and production (HS256 needs 256 bits)."""
 
 
 class Environment(StrEnum):
@@ -32,7 +35,7 @@ class Settings(BaseSettings):
         cors_allowed_origins: Browser origins allowed to call the API cross-origin.
         database_url: Database connection string.
         auth_service_secret: Secret used to sign and verify access tokens.
-        auth_token_ttl_seconds: Lifetime of an issued access token.
+        auth_token_ttl_seconds: Lifetime of an issued access token, in seconds.
         log_level: Minimum level for the JSON application logs.
         git_sha: Commit the running image was built from.
     """
@@ -50,7 +53,7 @@ class Settings(BaseSettings):
     debug: bool = False
     cors_allowed_origins: list[str] = Field(default_factory=list)
 
-    # AÃ±adido: Lee SKILLMATCH_DATABASE_URL o DATABASE_URL (del .env)
+    # Añadido: Lee SKILLMATCH_DATABASE_URL o DATABASE_URL (del .env)
     database_url: str = Field(  # type: ignore[pydantic-alias]
         default="postgresql+asyncpg://postgres:postgres@localhost:5432/skillmatch",
         validation_alias=AliasChoices(
@@ -89,6 +92,15 @@ class Settings(BaseSettings):
             if "*" in self.cors_allowed_origins:
                 msg = "wildcard CORS origins are not allowed in production"
                 raise ValueError(msg)
+        if (
+            self.environment in {Environment.STAGING, Environment.PRODUCTION}
+            and len(self.auth_service_secret.get_secret_value()) < AUTH_SECRET_MIN_LENGTH
+        ):
+            msg = (
+                "SKILLMATCH_AUTH_SERVICE_SECRET must be set to at least "
+                f"{AUTH_SECRET_MIN_LENGTH} characters in staging and production"
+            )
+            raise ValueError(msg)
         return self
 
     @property
