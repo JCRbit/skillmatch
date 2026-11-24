@@ -43,3 +43,6 @@ docs/legacy-audit/generated/*
 .claude/local/
 .cursor/local/
 agent-traces/
+
+# Coverage debug artifacts
+coverage-debug.json
