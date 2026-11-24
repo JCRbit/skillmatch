@@ -7,7 +7,9 @@ No es un esquema SQL definitivo; el esquema físico debe seguir a la auditoría 
 - `users`: id, email normalizado, password hash o subject de proveedor de identidad, status, created_at, last_login_at.
 - `roles` / `user_roles`: roles globales y permisos específicos, con restricciones explícitas.
 - `candidate_profiles`: user_id, nombre público/pseudónimo, ciudad/ubicación opcional, modalidad, idiomas, resumen confirmado, estado, consent timestamps.
+  - **Implementado en B-03** (migración `5d1e7a3c9b24`): `user_id` único, `display_name` (pseudónimo), `summary`, `city`, `languages`, preferencias (`work_modes`, `contract_types`, `preferred_locations`, `interests`) y flags de visibilidad (`discoverable`, `show_location`, ambos `false` por defecto). Pendiente: estado y consent timestamps (B-05). Ver [CANDIDATE_PROFILE.md](CANDIDATE_PROFILE.md).
 - `candidate_skills`: candidate_id, skill canonical, nivel auto-declarado/evaluado, source/evidence refs, confidence, updated_at.
+  - **Implementado en B-03**: skills **declaradas** (`name`, `name_key` único por candidato, `level` autodeclarado). Pendiente: taxonomía canónica, `source`/evidencias y `confidence`.
 - `candidate_documents`: owner_id, private storage key, MIME, hash, state, retention deadline, extracted text ref (si se guarda), parser version, deleted_at.
 - `projects`: owner_id, URL GitHub/portfolio, repo ID, description, evidence refs, ingestion time, consent/source, repo visibility.
 - `companies`: id, name, approved domains/verification state, public facts source.

@@ -24,6 +24,7 @@ Este archivo es la única puerta de entrada a la documentación del repositorio.
 - [DEPLOYMENT.md](DEPLOYMENT.md) — 3 niveles: local reproducible (`docker-compose`); CI/GitHub Actions (build + tests + scan); despliegue funcional (tag inmutable, rollback, health checks, registro de versión, sin datos reales ni secretos).
 - [TECH_STACK.md](TECH_STACK.md) — Stack técnica propuesta y dependencias.
 - [DATA_MODEL.md](DATA_MODEL.md) — Esquema de datos previsto.
+- [CANDIDATE_PROFILE.md](CANDIDATE_PROFILE.md) — Perfil de candidato (B-03, FR-002): endpoints, decisiones, esquema físico y criterios de aceptación con sus pruebas.
 
 Registro de decisiones de arquitectura (ADRs). Las decisiones de producto y proceso no van aquí: están en [DECISION_LOG.md](DECISION_LOG.md).
 
@@ -73,14 +74,18 @@ Registro de decisiones de arquitectura (ADRs). Las decisiones de producto y proc
 - [../scripts/](../scripts/) — Scripts de apoyo: `legacy_inventory.sh` y `check_foundation.sh`.
 - [../.env.example](../.env.example) — Plantilla de variables de entorno (solo valores de desarrollo; nunca secretos reales).
 
-## 7. Estado del repositorio (verificado 13/11/2026)
+## 7. Estado del repositorio (verificado 24/11/2026)
 
-- **Alcance de este PR/rama**: establece el marco de gobernanza documental y CI — `INDEX.md`, `DECISION_LOG.md`, `PRODUCT_BACKLOG.md` y `.github/workflows/ci.yml`.
-- **Documento rector**: Propuesta Integral Bilateral MVP v5.0 (disponible en el canal del equipo, no versionada en el repositorio por ser un PDF con datos de terceros). Es la fuente de alcance y ejecución; las decisiones `D-01`…`D-12` y el backlog `US-01`…`US-18` derivan de ella.
-- **Último commit base**: `6d03022`. Rama: `docs/kickoff-alignment-v5`. Remoto: `origin` → `https://github.com/JCRbit/skillmatch.git`.
-- **Código de producto**: no implementado. No existe `backend/` ni `frontend/`; no hay datos sintéticos generados; no hay `Dockerfile` ni `docker-compose.dev.yml`.
-- **CI**: definido en [.github/workflows/ci.yml](../.github/workflows/ci.yml). Los pasos de lint/tests se activan solos cuando existan `backend/pyproject.toml` o `frontend/package.json`.
-- **Decisiones**: las 12 decisiones oficiales de la v5.0 (`D-01`…`D-12`) están en estado `DECISION_PENDING`. Ver [DECISION_LOG.md](DECISION_LOG.md).
-- **Backlog**: snapshot del backlog de la v5.0 (`US-01`…`US-18`) en [PRODUCT_BACKLOG.md](PRODUCT_BACKLOG.md); el tracker vivo está en GitHub Issues/Projects.
-- **Bloqueos abiertos**: nombre definitivo del producto, datos sintéticos, y los conflictos de alcance entre la v5.0 y la documentación vigente listados en [DECISION_LOG.md](DECISION_LOG.md) §3.
-- **Nota**: el estado de ejecución real no es verificable desde este repositorio; el tracker vivo está en GitHub.
+- **Estado del proyecto**: implementación de producto en curso. El repositorio contiene `backend/` y `frontend/`.
+- **Backend**: Python, FastAPI y SQLAlchemy; incluye autenticación/autorización B-02 y endpoints de observabilidad P-05. La rama de trabajo actual desarrolla B-03 (perfil de candidato).
+- **Frontend**: existe `frontend/package.json`; su estado funcional y nivel de integración deben verificarse por separado.
+- **Rama local de trabajo**: `feat/candidate-crud`.
+- **Último commit de HEAD**: `b10c15f` — `merge: integrate B-02 authentication into P-05 observability`.
+- **Alcance en curso**: B-03 — CRUD del perfil de candidato, skills declaradas, preferencias y visibilidad (issue #30).
+- **Estado de B-03**: cambios implementados y validados localmente; todavía sin commit ni push. Los archivos modificados y nuevos permanecen en el árbol de trabajo.
+- **Calidad del backend B-03**: última validación local con 484 tests superados, cobertura de ramas del 97,98 %, Ruff y mypy sin errores.
+- **Migración B-03**: definida en Alembic, pero todavía no ejecutada.
+- **CI y despliegue**: su estado operativo debe comprobarse en GitHub Actions y en el entorno de despliegue; la existencia de los archivos de configuración no demuestra por sí sola que estén funcionando.
+- **Documento rector**: Propuesta Integral Bilateral MVP v5.0, disponible en el canal del equipo y no versionada en el repositorio.
+- **Fuente de verdad del alcance**: requisitos, matriz de trazabilidad, backlog y decisiones documentadas, junto con el documento rector. El estado de ejecución debe contrastarse con GitHub Issues/Projects.
+- **Nota**: este índice refleja el estado verificado en la fecha indicada; debe actualizarse cuando se integren nuevas funcionalidades o cambie el estado de las ramas.
