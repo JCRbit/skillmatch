@@ -12,10 +12,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from skillmatch import __version__
-from skillmatch.api import health
+from skillmatch.api import health, observability
 from skillmatch.api.router import API_V1_PREFIX, api_v1_router
 from skillmatch.core.config import Settings, get_settings
 from skillmatch.core.errors import register_exception_handlers
+from skillmatch.core.logging import configure_logging
 
 
 @asynccontextmanager
@@ -40,6 +41,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     resolved = settings or get_settings()
     docs_enabled = resolved.docs_enabled
 
+    # Logs are JSON from the first line, so start-up problems are machine-readable too.
+    configure_logging(resolved.log_level)
+
     app = FastAPI(
         title=resolved.app_name,
         version=__version__,
@@ -60,7 +64,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             allow_credentials=False,
         )
 
+    # Registered last, so it wraps everything else (Starlette applies middleware in reverse):
+    # every response, including CORS preflights and errors, carries a correlation id.
+    app.add_middleware(observability.RequestIdMiddleware)
+
     register_exception_handlers(app)
     app.include_router(health.router)
+    app.include_router(observability.router)
     app.include_router(api_v1_router, prefix=API_V1_PREFIX)
     return app

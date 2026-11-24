@@ -84,9 +84,13 @@ def test_unknown_routes_use_the_problem_format(failing_client: TestClient) -> No
 def test_unexpected_errors_never_leak_internal_details(
     failing_client: TestClient, caplog: pytest.LogCaptureFixture
 ) -> None:
-    response = failing_client.get("/_test/crash")
+    response = failing_client.get(
+        "/_test/crash",
+        headers={"X-Request-ID": "trace-500"},
+    )
 
     assert response.status_code == 500
+    assert response.headers["X-Request-ID"] == "trace-500"
     assert response.json()["detail"] == "An unexpected error occurred."
     assert "secret internal detail" not in response.text
-    assert "secret internal detail" in caplog.text  # the traceback is kept in the logs
+    assert "secret internal detail" in caplog.text

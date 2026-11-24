@@ -27,6 +27,50 @@
         }
       }
     },
+    "/ready": {
+      "get": {
+        "tags": [
+          "operations"
+        ],
+        "summary": "Readiness probe",
+        "description": "Report whether this process can serve traffic.\n\nUnlike ``/health`` (liveness), this checks the dependencies the API cannot work without, so an\norchestrator can take the instance out of the load balancer without restarting it. It answers\n``503`` when a dependency is down.\n\nArgs:\n    session: Per-request database session.\n    response: Response object, used to set the status code.\n\nReturns:\n    The state of each dependency.",
+        "operationId": "ready_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/version": {
+      "get": {
+        "tags": [
+          "operations"
+        ],
+        "summary": "Running version",
+        "description": "Report the application name, version, environment and commit that is running.\n\nArgs:\n    settings: Application settings.\n\nReturns:\n    The build identity of the process.",
+        "operationId": "version_version_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/register": {
       "post": {
         "tags": [
@@ -308,6 +352,48 @@
         "title": "PublicRole",
         "description": "Roles that may be chosen at public registration.\n\n``ADMIN`` is intentionally absent: administrators are never self-service. Listing only the\ntwo public roles here also makes the OpenAPI document say so."
       },
+      "ReadinessCheck": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "unavailable"
+            ],
+            "title": "Status",
+            "default": "ok"
+          }
+        },
+        "type": "object",
+        "title": "ReadinessCheck",
+        "description": "Result of a single readiness check."
+      },
+      "ReadinessResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "unavailable"
+            ],
+            "title": "Status"
+          },
+          "checks": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ReadinessCheck"
+            },
+            "type": "object",
+            "title": "Checks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "checks"
+        ],
+        "title": "ReadinessResponse",
+        "description": "Result of the readiness probe."
+      },
       "RegisterRequest": {
         "properties": {
           "email": {
@@ -411,6 +497,35 @@
         ],
         "title": "UserRole",
         "description": "Possible roles a user can have in the platform."
+      },
+      "VersionResponse": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "environment": {
+            "type": "string",
+            "title": "Environment"
+          },
+          "git_sha": {
+            "type": "string",
+            "title": "Git Sha"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "version",
+          "environment",
+          "git_sha"
+        ],
+        "title": "VersionResponse",
+        "description": "Code that is running, for traceability."
       }
     },
     "securitySchemes": {
