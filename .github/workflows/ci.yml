@@ -7,7 +7,8 @@
 #   code         backend (ruff, format, mypy, pytest + coverage) and frontend (lint, test, build)
 #   audit        known vulnerabilities in locked runtime dependencies (pip-audit, npm audit)
 #   migrations   Alembic upgrade/downgrade/drift check against a throwaway PostgreSQL
-#   infra        `docker compose config` and a build of the API development image
+#   infra        `docker compose config`, a build of the API development image, and a build plus
+#                smoke test of the API production image (the one published by publish-image.yml)
 #   gate         single required check: succeeds only if every job above succeeded
 #
 # Jobs that depend on code that does not exist yet (frontend, Alembic, compose) report a notice
@@ -363,6 +364,20 @@ jobs:
       - name: Build the API development image
         if: ${{ hashFiles('compose.yaml') != '' }}
         run: docker compose build api
+
+      # Same Dockerfile target and same smoke test as the publish workflow (task P-06), so a
+      # change that would break the release image is caught in the pull request.
+      - name: Build the API production image
+        if: ${{ hashFiles('backend/Dockerfile') != '' }}
+        run: |
+          docker build backend \
+            --target production \
+            --build-arg "GIT_SHA=${GITHUB_SHA}" \
+            --tag skillmatch-api:ci
+
+      - name: Smoke-test the API production image
+        if: ${{ hashFiles('backend/Dockerfile') != '' }}
+        run: bash scripts/smoke_test_image.sh skillmatch-api:ci "${GITHUB_SHA}"
 
   gate:
     name: CI · gate

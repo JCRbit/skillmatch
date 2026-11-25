@@ -1,0 +1,165 @@
+# Publish the API image to Docker Hub (task P-06).
+#
+# Manual and protected: it only runs from `workflow_dispatch` on `main`, only for a commit whose
+# `CI · gate` check is green, and the publishing job waits for approval of the `docker-hub`
+# environment (required reviewers). The image is tagged with the full commit SHA, never `latest`,
+# and an existing tag is never overwritten.
+#
+# Jobs
+#   verify    Refuses anything that is not `main` with a green `CI · gate` for this exact commit.
+#   publish   Builds the `production` stage, smoke-tests that exact image and then pushes it.
+#
+# One-time setup (repository settings, see docs/DEPLOYMENT.md):
+#   Environment `docker-hub`      Required reviewers; deployment branches limited to `main`.
+#   Environment secrets           DOCKER_HUB_USERNAME, DOCKER_HUB_TOKEN (access token, not a password).
+#   Environment/repository var    DOCKER_HUB_IMAGE, e.g. `<namespace>/<repository>` (decision pending).
+#   Optional repository variable  UV_VERSION, to pin the uv release used by the build.
+
+name: Publish image
+
+on:
+  workflow_dispatch:
+
+# Least privilege: jobs only read the repository. Jobs that need more declare it themselves.
+permissions:
+  contents: read
+
+# Never run two publications at once, and never cancel one that is already pushing.
+concurrency:
+  group: publish-image
+  cancel-in-progress: false
+
+defaults:
+  run:
+    # Explicit bash enables `pipefail`; GitHub's implicit default does not.
+    shell: bash
+
+jobs:
+  verify:
+    name: Verify · main y CI en verde
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      checks: read
+    steps:
+      - name: Only publish from main
+        env:
+          REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+          if [[ "${REF}" != "refs/heads/main" ]]; then
+            echo "::error::Images are only published from main (this run is on ${REF})."
+            exit 1
+          fi
+
+      # The CI workflow runs on every push to main, so the merged commit has its own `CI · gate`.
+      - name: Require a green "CI · gate" for this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          conclusion="$(gh api --method GET "repos/${GITHUB_REPOSITORY}/commits/${SHA}/check-runs" \
+            -f check_name='CI · gate' -f filter=latest \
+            --jq '[.check_runs[] | select(.status == "completed") | .conclusion] | first // "none"')"
+          echo "CI · gate for ${SHA}: ${conclusion}"
+          if [[ "${conclusion}" != "success" ]]; then
+            echo "::error::'CI · gate' is not green for ${SHA} (result: ${conclusion}). Wait for CI to finish on main, or fix it, and run this workflow again."
+            exit 1
+          fi
+
+  publish:
+    name: Publish · build, smoke test y push
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Pauses here until a reviewer approves; the Docker Hub credentials live only in this environment.
+    environment:
+      name: docker-hub
+      url: https://hub.docker.com/r/${{ vars.DOCKER_HUB_IMAGE }}/tags
+    permissions:
+      contents: read
+    env:
+      IMAGE: ${{ vars.DOCKER_HUB_IMAGE }}
+      SHA: ${{ github.sha }}
+      DOCKER_BUILDKIT: "1"
+    steps:
+      - name: Validate the publishing configuration
+        env:
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ ! "${IMAGE}" =~ ^[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*$ ]]; then
+            echo "::error::Set the variable DOCKER_HUB_IMAGE to '<namespace>/<repository>' (lower case). Current value: '${IMAGE}'."
+            exit 1
+          fi
+          if [[ -z "${DOCKER_HUB_USERNAME}" || -z "${DOCKER_HUB_TOKEN}" ]]; then
+            echo "::error::Missing secret DOCKER_HUB_USERNAME or DOCKER_HUB_TOKEN in the 'docker-hub' environment."
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Build the production image
+        env:
+          UV_VERSION: ${{ vars.UV_VERSION || 'latest' }}
+          SOURCE_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          set -euo pipefail
+          docker build backend \
+            --target production \
+            --build-arg "UV_VERSION=${UV_VERSION}" \
+            --build-arg "GIT_SHA=${SHA}" \
+            --build-arg "BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --build-arg "SOURCE_URL=${SOURCE_URL}" \
+            --tag "${IMAGE}:${SHA}"
+
+      # Tests the very image that is pushed below: nothing is rebuilt between the test and the push.
+      - name: Smoke-test the image
+        run: bash scripts/smoke_test_image.sh "${IMAGE}:${SHA}" "${SHA}"
+
+      - name: Log in to Docker Hub
+        env:
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          printf '%s' "${DOCKER_HUB_TOKEN}" | docker login --username "${DOCKER_HUB_USERNAME}" --password-stdin
+
+      # A published tag is a release record: refuse to replace it.
+      - name: Refuse to overwrite an existing tag
+        run: |
+          set -euo pipefail
+          if docker manifest inspect "${IMAGE}:${SHA}" >/dev/null 2>&1; then
+            echo "::error::${IMAGE}:${SHA} already exists in Docker Hub; published tags are immutable."
+            exit 1
+          fi
+
+      - name: Push the image
+        run: |
+          set -euo pipefail
+          docker push "${IMAGE}:${SHA}"
+
+      - name: Summary
+        run: |
+          set -euo pipefail
+          digest="$(docker image inspect --format '{{ index .RepoDigests 0 }}' "${IMAGE}:${SHA}")"
+          {
+            echo "### Image published"
+            echo
+            echo "- Tag: \`${IMAGE}:${SHA}\`"
+            echo "- Digest: \`${digest}\`"
+            echo "- Commit: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${SHA}"
+            echo
+            echo "Deploy by digest or by this tag; roll back by deploying the previous SHA tag."
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Log out of Docker Hub
+        if: ${{ always() }}
+        run: docker logout || true

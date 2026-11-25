@@ -14,7 +14,7 @@ required check **`CI · gate`** is green; that check succeeds only if every job 
 | `Code · lint y tests` | Backend: ruff, format, mypy (strict), pytest + coverage ≥ 85 %. Frontend: lint, type check, unit tests, build | see below |
 | `Audit · dependency vulnerabilities` | Known CVEs in locked **runtime** dependencies (`pip-audit`, `npm audit --audit-level=high`) | see below |
 | `Database · migrations on a temporary database` | `alembic upgrade head`, `downgrade base`, `upgrade head` and `alembic check` on a throwaway PostgreSQL | see below |
-| `Infra · compose config and image build` | `docker compose config` is valid and the API development image builds | `docker compose config -q && docker compose build api` |
+| `Infra · compose config and image build` | `docker compose config` is valid; the API development image builds; the API **production** image builds and passes `scripts/smoke_test_image.sh` | `docker compose config -q && docker compose build api`, then the production commands below |
 | `CI · gate` | Aggregates all of the above; the only check that needs to be required | — |
 
 Jobs whose code does not exist yet (frontend, Alembic, compose) print a `notice` annotation and skip
@@ -36,6 +36,10 @@ uvx pip-audit --strict --no-deps --disable-pip --requirement /tmp/requirements.t
 npm ci && npm run lint && npm run typecheck --if-present && npm test && npm run build
 npm audit --omit=dev --audit-level=high
 
+# Production image (from the repository root; needs Docker and curl)
+docker build backend --target production --build-arg GIT_SHA="$(git rev-parse HEAD)" --tag skillmatch-api:local
+bash scripts/smoke_test_image.sh skillmatch-api:local "$(git rev-parse HEAD)"
+
 # Migrations (from backend/, with the stack running: docker compose up -d db)
 export SKILLMATCH_DATABASE_URL=postgresql+psycopg://USER:PASSWORD@localhost:5432/DB
 uv run alembic upgrade head && uv run alembic downgrade base && uv run alembic upgrade head
@@ -49,6 +53,22 @@ uv run alembic check
 | P-02 (frontend) | `frontend/package-lock.json` committed; npm scripts `lint`, `test` (single run, no watch mode) and `build`; compatible with Node 22 (`NODE_VERSION` in `ci.yml`). A separate `typecheck` script is optional: type checking already runs inside `npm run build` (`tsc -b && vite build`) |
 | B-01 (data model) | `backend/alembic.ini`; Alembic's `env.py` reads the database URL from `SKILLMATCH_DATABASE_URL` and exposes `target_metadata` so `alembic check` can detect drift |
 | P-03 (compose) | `compose.yaml` and `.env.example` at the repository root; `.env.example` must contain placeholders only |
+
+## Publishing the image (task P-06)
+
+`.github/workflows/publish-image.yml` is **not** part of the CI gate: it never runs on pull requests or
+pushes, only on demand (`workflow_dispatch`). See [`DEPLOYMENT.md`](DEPLOYMENT.md) for the one-time setup.
+
+| Job | What it does |
+|---|---|
+| `Verify · main y CI en verde` | Fails unless the run is on `main` and `CI · gate` finished with `success` for the exact commit being published |
+| `Publish · build, smoke test y push` | Waits for approval of the `docker-hub` environment, builds the `production` target, smoke-tests that image, refuses to overwrite an existing tag and pushes `<namespace>/<repository>:<full commit SHA>` |
+
+Rules that keep releases traceable: the tag is always the full commit SHA (no `latest`), the image carries the
+`org.opencontainers.image.revision` label, and the Docker Hub credentials exist only as secrets of the
+`docker-hub` environment, so they are never exposed to pull requests or to the `verify` job.
+
+If you rename the `CI · gate` job, update the check name used by `verify`.
 
 ## Required checks and branch protection
 
@@ -107,6 +127,7 @@ security updates separately and immediately.
 - Only runtime dependencies are audited. Development tooling is covered by Dependabot alerts.
 - The frontend checks were verified on Node 22 in a clean container (`node:22-alpine`), the version used by CI and by the `web` service in `compose.yaml`.
 - The migration job needs `psycopg` and Alembic as project dependencies (task B-01).
+- The production image is built for `linux/amd64` only and published without SBOM or provenance attestations; the smoke test checks runtime properties but does not scan the image for CVEs (runtime dependencies are audited separately by the `audit` job).
 - Playwright end-to-end tests (task Q-01) will be added as a separate job and included in `gate`.
 
 ## Changing the pipeline

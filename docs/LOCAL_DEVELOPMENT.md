@@ -76,6 +76,16 @@ reload the API and the Vite dev server automatically. Changing `backend/pyprojec
 `backend/uv.lock` requires a rebuild (`docker compose up --build`); changing `frontend/package.json`
 or `frontend/package-lock.json` requires `docker compose restart web`.
 
+### Build and test the production image
+
+The release image (`production` stage of `backend/Dockerfile`, published by the *Publish image* workflow)
+can be reproduced locally. It is independent of `compose.yaml` and needs no database for the smoke test.
+
+```bash
+docker build backend --target production --build-arg GIT_SHA="$(git rev-parse HEAD)" --tag skillmatch-api:local
+bash scripts/smoke_test_image.sh skillmatch-api:local "$(git rev-parse HEAD)"   # Git Bash on Windows
+```
+
 ### Frontend without Docker
 
 The `web` service already runs the Vite dev server. To work on the frontend directly (Node 22):
