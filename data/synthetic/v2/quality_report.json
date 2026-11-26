@@ -1,0 +1,43 @@
+{
+  "dataset_version": "v2",
+  "reference_date": "2026-11-26",
+  "taxonomy_version": "skills_v1",
+  "dama_dimensions": {
+    "completeness": {
+      "weight": 40,
+      "score": 100.0
+    },
+    "uniqueness_integrity": {
+      "weight": 35,
+      "score": 100.0
+    },
+    "timeliness_actuality": {
+      "weight": 25,
+      "score": 100.0
+    }
+  },
+  "dama_total_score_0_100": 100.0,
+  "checks": {
+    "required_fields_complete": true,
+    "duplicate_ids": false,
+    "duplicate_emails": false,
+    "broken_project_refs": false,
+    "broken_company_refs": false,
+    "unknown_taxonomy_skills": false,
+    "dates_within_365_days": true,
+    "incoherent_project_date_ranges": false
+  },
+  "counts": {
+    "companies": 3,
+    "vacancies": 14,
+    "candidates": 30,
+    "projects": 32,
+    "company_docs": 3
+  },
+  "hard_cases": [
+    "alias",
+    "false_friend",
+    "empty_evidence"
+  ],
+  "no_real_data": true
+}

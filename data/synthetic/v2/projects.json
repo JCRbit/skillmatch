@@ -1,0 +1,492 @@
+[
+  {
+    "project_id": "prj-001",
+    "candidate_id": "can-001",
+    "name": "API de Tareas Ficticia",
+    "description": "Proyecto sintético de API REST para gestión de tareas con autenticación básica.",
+    "repo_url": "https://github.com/example-skillmatch/can-001-task-api",
+    "demo_url": null,
+    "role": "backend_developer",
+    "start_date": "2025-12-01",
+    "end_date": "2026-02-15",
+    "evidence_type": "manual_portfolio",
+    "source": "synthetic_seed_v1"
+  },
+  {
+    "project_id": "prj-002",
+    "candidate_id": "can-001",
+    "name": "Pipeline de Datos Demo",
+    "description": "Proyecto sintético de ETL simple con contenedores para práctica de datos.",
+    "repo_url": "https://github.com/example-skillmatch/can-001-data-pipeline",
+    "demo_url": null,
+    "role": "data_engineer_junior",
+    "start_date": "2026-01-10",
+    "end_date": "2026-03-01",
+    "evidence_type": "manual_portfolio",
+    "source": "synthetic_seed_v1"
+  },
+  {
+    "project_id": "prj-003",
+    "candidate_id": "can-002",
+    "name": "Dashboard Frontend Accesible",
+    "description": "Proyecto sintético de dashboard React con componentes accesibles.",
+    "repo_url": "https://github.com/example-skillmatch/can-002-accessible-dashboard",
+    "demo_url": "https://demo.example-skillmatch.dev/can-002",
+    "role": "frontend_developer",
+    "start_date": "2026-01-30",
+    "end_date": "2026-02-01",
+    "evidence_type": "manual_portfolio",
+    "source": "synthetic_seed_v1"
+  },
+  {
+    "project_id": "prj-004",
+    "candidate_id": "can-003",
+    "name": "Suite de Pruebas API Demo",
+    "description": "Proyecto sintético de pruebas automatizadas para API de ejemplo.",
+    "repo_url": "https://github.com/example-skillmatch/can-003-api-test-suite",
+    "demo_url": null,
+    "role": "qa_automation",
+    "start_date": "2026-02-01",
+    "end_date": "2026-04-15",
+    "evidence_type": "manual_portfolio",
+    "source": "synthetic_seed_v1"
+  },
+  {
+    "project_id": "prj-005",
+    "candidate_id": "can-004",
+    "name": "Análisis SQL de Ventas Ficticias",
+    "description": "Proyecto sintético de consultas SQL y reporte de datos ficticios.",
+    "repo_url": "https://github.com/example-skillmatch/can-004-sql-analysis",
+    "demo_url": null,
+    "role": "data_analyst_junior",
+    "start_date": "2025-12-01",
+    "end_date": "2026-02-28",
+    "evidence_type": "manual_portfolio",
+    "source": "synthetic_seed_v1"
+  },
+  {
+    "project_id": "prj-006",
+    "candidate_id": "can-005",
+    "name": "App Full Stack de Reservas",
+    "description": "Proyecto sintético full stack con React y Node.js para reservas.",
+    "repo_url": "https://github.com/example-skillmatch/can-005-booking-app",
+    "demo_url": "https://demo.example-skillmatch.dev/can-005",
+    "role": "full_stack_developer",
+    "start_date": "2025-12-01",
+    "end_date": "2026-03-01",
+    "evidence_type": "manual_portfolio",
+    "source": "synthetic_seed_v1"
+  },
+  {
+    "project_id": "prj-007",
+    "candidate_id": "can-006",
+    "name": "Scripts de Automatización Linux",
+    "description": "Proyecto sintético de scripts bash/python para tareas de soporte.",
+    "repo_url": "https://github.com/example-skillmatch/can-006-linux-scripts",
+    "demo_url": null,
+    "role": "cloud_support_junior",
+    "start_date": "2026-01-15",
+    "end_date": "2026-03-15",
+    "evidence_type": "manual_portfolio",
+    "source": "synthetic_seed_v1"
+  },
+  {
+    "project_id": "prj-008",
+    "candidate_id": "can-007",
+    "name": "Plantilla CI/CD con Docker",
+    "description": "Proyecto sintético de pipeline CI/CD y contenedorización.",
+    "repo_url": "https://github.com/example-skillmatch/can-007-cicd-template",
+    "demo_url": null,
+    "role": "devops_junior",
+    "start_date": "2025-12-01",
+    "end_date": "2026-02-20",
+    "evidence_type": "manual_portfolio",
+    "source": "synthetic_seed_v1"
+  },
+  {
+    "project_id": "prj-009",
+    "candidate_id": "can-008",
+    "name": "Servicio REST Java Demo",
+    "description": "Proyecto sintético de API REST con Java y Spring Boot.",
+    "repo_url": "https://github.com/example-skillmatch/can-008-java-rest",
+    "demo_url": null,
+    "role": "backend_developer",
+    "start_date": "2025-12-01",
+    "end_date": "2026-02-01",
+    "evidence_type": "manual_portfolio",
+    "source": "synthetic_seed_v1"
+  },
+  {
+    "project_id": "prj-010",
+    "candidate_id": "can-009",
+    "name": "Frontend TypeScript con Tests",
+    "description": "Proyecto sintético React+TypeScript con pruebas unitarias.",
+    "repo_url": "https://github.com/example-skillmatch/can-009-ts-frontend",
+    "demo_url": "https://demo.example-skillmatch.dev/can-009",
+    "role": "frontend_developer",
+    "start_date": "2026-01-05",
+    "end_date": "2026-03-20",
+    "evidence_type": "manual_portfolio",
+    "source": "synthetic_seed_v1"
+  },
+  {
+    "project_id": "prj-011",
+    "candidate_id": "can-010",
+    "name": "API Node.js con MongoDB",
+    "description": "Proyecto sintético de API Express con persistencia en MongoDB.",
+    "repo_url": "https://github.com/example-skillmatch/can-010-node-mongo-api",
+    "demo_url": null,
+    "role": "backend_developer",
+    "start_date": "2025-12-15",
+    "end_date": "2026-03-10",
+    "evidence_type": "manual_portfolio",
+    "source": "synthetic_seed_v1"
+  },
+  {
+    "project_id": "prj-012",
+    "candidate_id": "can-011",
+    "name": "Kit de QA y Documentación",
+    "description": "Proyecto sintético con casos de prueba, API testing y documentación técnica.",
+    "repo_url": "https://github.com/example-skillmatch/can-011-qa-doc-kit",
+    "demo_url": null,
+    "role": "qa_analyst",
+    "start_date": "2026-02-10",
+    "end_date": "2026-04-10",
+    "evidence_type": "manual_portfolio",
+    "source": "synthetic_seed_v1"
+  },
+  {
+    "project_id": "prj-013",
+    "candidate_id": "can-012",
+    "name": "Mini Análisis de Datos Colaborativo",
+    "description": "Proyecto sintético de análisis de datos con reporte y presentación.",
+    "repo_url": "https://github.com/example-skillmatch/can-012-collab-data",
+    "demo_url": null,
+    "role": "data_analyst_junior",
+    "start_date": "2026-03-01",
+    "end_date": "2026-04-20",
+    "evidence_type": "manual_portfolio",
+    "source": "synthetic_seed_v1"
+  },
+  {
+    "project_id": "prj-014",
+    "candidate_id": "can-013",
+    "name": "Portal Django + React Demo",
+    "description": "Proyecto sintético full stack con Django y React.",
+    "repo_url": "https://github.com/example-skillmatch/can-013-django-react",
+    "demo_url": null,
+    "role": "full_stack_developer",
+    "start_date": "2026-01-30",
+    "end_date": "2026-02-28",
+    "evidence_type": "manual_portfolio",
+    "source": "synthetic_seed_v1"
+  },
+  {
+    "project_id": "prj-015",
+    "candidate_id": "can-014",
+    "name": "Infra Demo con Terraform",
+    "description": "Proyecto sintético de infraestructura como código para entorno demo.",
+    "repo_url": "https://github.com/example-skillmatch/can-014-terraform-demo",
+    "demo_url": null,
+    "role": "platform_junior",
+    "start_date": "2026-01-20",
+    "end_date": "2026-03-30",
+    "evidence_type": "manual_portfolio",
+    "source": "synthetic_seed_v1"
+  },
+  {
+    "project_id": "prj-016",
+    "candidate_id": "can-015",
+    "name": "Landing Vue Accesible",
+    "description": "Proyecto sintético frontend con Vue.js y maquetación responsive.",
+    "repo_url": "https://github.com/example-skillmatch/can-015-vue-landing",
+    "demo_url": "https://demo.example-skillmatch.dev/can-015",
+    "role": "frontend_developer",
+    "start_date": "2026-02-15",
+    "end_date": "2026-04-01",
+    "evidence_type": "manual_portfolio",
+    "source": "synthetic_seed_v1"
+  },
+  {
+    "project_id": "prj-017",
+    "candidate_id": "can-016",
+    "title": "Dashboard de ventas",
+    "description": "Proyecto sint?tico con Python y SQL para dashboard.",
+    "role": "Data Junior",
+    "stack": [
+      "Python",
+      "SQL",
+      "Git"
+    ],
+    "source_type": "manual",
+    "source_url": "https://github.com/example-skillmatch/prj-017",
+    "start_date": "2026-04-01",
+    "end_date": "2026-05-15",
+    "created_at": "2026-11-15T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "project_id": "prj-018",
+    "candidate_id": "can-017",
+    "title": "Landing accesible",
+    "description": "Proyecto sint?tico frontend con React y accesibilidad.",
+    "role": "Frontend Junior",
+    "stack": [
+      "React",
+      "JavaScript",
+      "HTML",
+      "CSS"
+    ],
+    "source_type": "manual",
+    "source_url": "https://github.com/example-skillmatch/prj-018",
+    "start_date": "2026-03-01",
+    "end_date": "2026-04-10",
+    "created_at": "2026-11-15T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "project_id": "prj-019",
+    "candidate_id": "can-018",
+    "title": "API Node",
+    "description": "Proyecto sint?tico con Node.js y PostgreSQL.",
+    "role": "Backend Junior",
+    "stack": [
+      "Node.js",
+      "PostgreSQL",
+      "Docker"
+    ],
+    "source_type": "manual",
+    "source_url": "https://github.com/example-skillmatch/prj-019",
+    "start_date": "2026-02-01",
+    "end_date": "2026-03-20",
+    "created_at": "2026-11-15T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "project_id": "prj-020",
+    "candidate_id": "can-019",
+    "title": "Script QA",
+    "description": "Proyecto sint?tico de automatizaci?n QA con Python.",
+    "role": "QA Junior",
+    "stack": [
+      "Python",
+      "Git"
+    ],
+    "source_type": "manual",
+    "source_url": "https://github.com/example-skillmatch/prj-020",
+    "start_date": "2026-05-01",
+    "end_date": "2026-06-01",
+    "created_at": "2026-11-15T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "project_id": "prj-021",
+    "candidate_id": "can-020",
+    "title": "App fullstack",
+    "description": "Proyecto sint?tico fullstack con FastAPI y React.",
+    "role": "Fullstack Junior",
+    "stack": [
+      "Python",
+      "FastAPI",
+      "React",
+      "SQL"
+    ],
+    "source_type": "manual",
+    "source_url": "https://github.com/example-skillmatch/prj-021",
+    "start_date": "2026-01-15",
+    "end_date": "2026-03-01",
+    "created_at": "2026-11-15T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "project_id": "prj-022",
+    "candidate_id": "can-021",
+    "title": "Pipeline CI",
+    "description": "Proyecto sint?tico con Docker y CI.",
+    "role": "DevOps Junior",
+    "stack": [
+      "Docker",
+      "Git"
+    ],
+    "source_type": "manual",
+    "source_url": "https://github.com/example-skillmatch/prj-022",
+    "start_date": "2026-04-10",
+    "end_date": "2026-05-10",
+    "created_at": "2026-11-15T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "project_id": "prj-023",
+    "candidate_id": "can-022",
+    "title": "ETL simple",
+    "description": "Proyecto sint?tico ETL con Python y SQL.",
+    "role": "Data Junior",
+    "stack": [
+      "Python",
+      "SQL"
+    ],
+    "source_type": "manual",
+    "source_url": "https://github.com/example-skillmatch/prj-023",
+    "start_date": "2026-06-01",
+    "end_date": "2026-07-01",
+    "created_at": "2026-11-15T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "project_id": "prj-024",
+    "candidate_id": "can-023",
+    "title": "UI components",
+    "description": "Proyecto sint?tico de componentes con TypeScript.",
+    "role": "Frontend Junior",
+    "stack": [
+      "TypeScript",
+      "React",
+      "CSS"
+    ],
+    "source_type": "manual",
+    "source_url": "https://github.com/example-skillmatch/prj-024",
+    "start_date": "2026-05-15",
+    "end_date": "2026-06-15",
+    "created_at": "2026-11-15T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "project_id": "prj-025",
+    "candidate_id": "can-024",
+    "title": "Microservicio Java",
+    "description": "Proyecto sint?tico con Java y Spring Boot.",
+    "role": "Backend Junior",
+    "stack": [
+      "Java",
+      "SQL",
+      "Git"
+    ],
+    "source_type": "manual",
+    "source_url": "https://github.com/example-skillmatch/prj-025",
+    "start_date": "2026-03-10",
+    "end_date": "2026-04-20",
+    "created_at": "2026-11-15T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "project_id": "prj-026",
+    "candidate_id": "can-025",
+    "title": "Tests E2E",
+    "description": "Proyecto sint?tico con Python y pruebas.",
+    "role": "QA Junior",
+    "stack": [
+      "Python",
+      "Git",
+      "Docker"
+    ],
+    "source_type": "manual",
+    "source_url": "https://github.com/example-skillmatch/prj-026",
+    "start_date": "2026-02-15",
+    "end_date": "2026-03-30",
+    "created_at": "2026-11-15T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "project_id": "prj-027",
+    "candidate_id": "can-026",
+    "title": "API REST",
+    "description": "Proyecto sint?tico con Django y PostgreSQL.",
+    "role": "Backend Junior",
+    "stack": [
+      "Python",
+      "Django",
+      "PostgreSQL"
+    ],
+    "source_type": "manual",
+    "source_url": "https://github.com/example-skillmatch/prj-027",
+    "start_date": "2026-01-20",
+    "end_date": "2026-03-05",
+    "created_at": "2026-11-15T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "project_id": "prj-028",
+    "candidate_id": "can-027",
+    "title": "Portal interno",
+    "description": "Proyecto sint?tico con Angular.",
+    "role": "Frontend Junior",
+    "stack": [
+      "TypeScript",
+      "Angular",
+      "HTML"
+    ],
+    "source_type": "manual",
+    "source_url": "https://github.com/example-skillmatch/prj-028",
+    "start_date": "2026-04-05",
+    "end_date": "2026-05-20",
+    "created_at": "2026-11-15T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "project_id": "prj-029",
+    "candidate_id": "can-028",
+    "title": "CLI tool",
+    "description": "Proyecto sint?tico con Go.",
+    "role": "Backend Junior",
+    "stack": [
+      "Go",
+      "Git"
+    ],
+    "source_type": "manual",
+    "source_url": "https://github.com/example-skillmatch/prj-029",
+    "start_date": "2026-06-10",
+    "end_date": "2026-07-10",
+    "created_at": "2026-11-15T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "project_id": "prj-030",
+    "candidate_id": "can-029",
+    "title": "Proyecto con alias",
+    "description": "Proyecto sint?tico que menciona JS, Postgres y Node.",
+    "role": "Fullstack Junior",
+    "stack": [
+      "JS",
+      "Postgres",
+      "Node"
+    ],
+    "source_type": "manual",
+    "source_url": "https://github.com/example-skillmatch/prj-030",
+    "start_date": "2026-05-01",
+    "end_date": "2026-06-01",
+    "created_at": "2026-11-15T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "project_id": "prj-031",
+    "candidate_id": "can-030",
+    "title": "Proyecto con falso amigo",
+    "description": "Proyecto sint?tico: trabaj? con Java (backend) y tambi?n con JavaScript en UI. Caso falso amigo Java/JavaScript.",
+    "role": "Backend Junior",
+    "stack": [
+      "Java",
+      "JavaScript",
+      "SQL"
+    ],
+    "source_type": "manual",
+    "source_url": "https://github.com/example-skillmatch/prj-031",
+    "start_date": "2026-03-01",
+    "end_date": "2026-04-01",
+    "created_at": "2026-11-15T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "project_id": "prj-032",
+    "candidate_id": "can-030",
+    "title": "Proyecto sin evidencia t?cnica clara",
+    "description": "Proyecto sint?tico de coordinaci?n y documentaci?n sin stack t?cnico concreto.",
+    "role": "Project Contributor",
+    "stack": [],
+    "source_type": "manual",
+    "source_url": null,
+    "start_date": "2026-06-15",
+    "end_date": "2026-07-15",
+    "created_at": "2026-11-15T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  }
+]
