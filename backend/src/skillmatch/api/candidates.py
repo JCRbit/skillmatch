@@ -26,6 +26,7 @@ from fastapi import APIRouter, Depends, Path, status
 
 from skillmatch.api.deps import SessionDep, require_roles, verify_resource_ownership
 from skillmatch.api.problems import problem_responses
+from skillmatch.modules.candidates.models import ConsentPurpose
 from skillmatch.modules.candidates.schemas import (
     CandidateProfileCreate,
     CandidateProfileRead,
@@ -34,6 +35,9 @@ from skillmatch.modules.candidates.schemas import (
     CandidateProjectRead,
     CandidateProjectUpdate,
     CandidateProjectWithProposalsRead,
+    ConsentRead,
+    ConsentsRead,
+    ConsentUpdate,
     EvidenceProposalRead,
     PreferencesRead,
     PreferencesUpdate,
@@ -55,6 +59,9 @@ _MAX_DB_INTEGER = 2_147_483_647
 SkillIdPath = Annotated[int, Path(ge=1, le=_MAX_DB_INTEGER, description="Id of a declared skill.")]
 """Path parameter of a skill; bounded so it always fits the database integer type."""
 ProjectIdPath = Annotated[int, Path(ge=1, le=_MAX_DB_INTEGER, description="Id of a project.")]
+
+ConsentPurposePath = Annotated[ConsentPurpose, Path(description="Purpose the decision applies to.")]
+"""Path parameter of a consent purpose; an unknown value answers ``422``."""
 
 
 def get_candidate_service(session: SessionDep) -> CandidateService:
@@ -300,3 +307,41 @@ async def delete_project(
     owner_id = await service.get_project_owner_id(project_id)
     verify_resource_ownership(owner_id, current_user, hide_if_unauthorized=True)
     await service.delete_project(project_id, current_user.id)
+
+
+# ------------------------------------------------------------------------ consent
+@router.get(
+    "/me/consents",
+    summary="Read my consent decisions",
+    responses=problem_responses(401, 403, 404),
+)
+async def list_consents(current_user: TalentDep, service: CandidateServiceDep) -> ConsentsRead:
+    """Return every purpose with its state; a purpose never decided is reported as denied."""
+    consents = await service.list_consents(current_user.id)
+    return ConsentsRead.from_consents(consents)
+
+
+@router.put(
+    "/me/consents/{purpose}",
+    summary="Grant or withdraw consent for one purpose",
+    responses=problem_responses(401, 403, 404, 422),
+)
+async def set_consent(
+    purpose: ConsentPurposePath,
+    body: ConsentUpdate,
+    current_user: TalentDep,
+    service: CandidateServiceDep,
+) -> ConsentRead:
+    """Set the caller's decision for one purpose.
+
+    Withdrawing ``discovery`` also turns the ``discoverable`` flag off in the same
+    transaction, so the profile stops being reachable at once.
+    """
+    consent = await service.set_consent(current_user.id, purpose, body)
+    return ConsentRead(
+        purpose=purpose,
+        granted=consent.granted,
+        granted_at=consent.granted_at,
+        revoked_at=consent.revoked_at,
+        policy_version=consent.policy_version,
+    )
