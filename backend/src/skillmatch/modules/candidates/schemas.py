@@ -7,6 +7,7 @@ matters because these bodies carry personal data.
 """
 
 import re
+from collections.abc import Sequence
 from datetime import UTC, date, datetime
 from typing import Annotated, Any, Final, Literal, Self
 
@@ -22,10 +23,12 @@ from pydantic import (
 )
 
 from skillmatch.modules.candidates.models import (
+    CandidateConsent,
     CandidateProfile,
     CandidateProject,
     CandidateProjectEvidence,
     CandidateSkill,
+    ConsentPurpose,
     ContractType,
     EvidenceStatus,
     ProjectSourceType,
@@ -39,6 +42,7 @@ CITY_MAX_LENGTH: Final = 100
 MAX_LANGUAGES: Final = 10
 MAX_PREFERRED_LOCATIONS: Final = 10
 MAX_INTERESTS: Final = 20
+POLICY_VERSION_MAX_LENGTH: Final = 20
 SKILL_NAME_MAX_LENGTH: Final = 60
 
 _SKILL_NAME_PATTERN: Final = re.compile(r"[\w.][\w .+#/&()-]*")
@@ -561,3 +565,68 @@ class CandidateProjectWithProposalsRead(CandidateProjectRead):
 
     evidence_proposals: list[EvidenceProposalRead] = Field(default_factory=list)
     evidences: list[EvidenceRead] = Field(default_factory=list)
+
+
+# Consent
+# --------------------------------------------------------------------------- #
+class ConsentUpdate(_Request):
+    """Body of ``PUT /candidates/me/consents/{purpose}``: the candidate's decision.
+
+    ``granted`` is required and strict: there is no default, so a client can never grant or
+    revoke a purpose by accident. ``policy_version`` is optional; when it is omitted the server
+    records the version of the privacy text it currently publishes.
+    """
+
+    granted: StrictBool = Field(
+        description="True to allow sharing for this purpose, false to withdraw it."
+    )
+    policy_version: (
+        Annotated[
+            str,
+            BeforeValidator(_strip),
+            StringConstraints(min_length=1, max_length=POLICY_VERSION_MAX_LENGTH),
+        ]
+        | None
+    ) = None
+
+
+class ConsentRead(BaseModel):
+    """The state of one purpose. A purpose never decided is reported as not granted."""
+
+    purpose: ConsentPurpose
+    granted: bool
+    granted_at: UtcDatetime | None
+    revoked_at: UtcDatetime | None
+    policy_version: str | None
+
+
+class ConsentsRead(BaseModel):
+    """Every purpose, always present, so a client never has to guess a missing one."""
+
+    consents: list[ConsentRead]
+
+    @classmethod
+    def from_consents(cls, stored: Sequence[CandidateConsent]) -> Self:
+        """Build the full list, filling in the purposes that were never decided."""
+        by_purpose = {consent.purpose: consent for consent in stored}
+        return cls(
+            consents=[
+                ConsentRead(
+                    purpose=purpose,
+                    granted=consent.granted,
+                    granted_at=consent.granted_at,
+                    revoked_at=consent.revoked_at,
+                    policy_version=consent.policy_version,
+                )
+                if consent is not None
+                else ConsentRead(
+                    purpose=purpose,
+                    granted=False,
+                    granted_at=None,
+                    revoked_at=None,
+                    policy_version=None,
+                )
+                for purpose in ConsentPurpose
+                for consent in (by_purpose.get(purpose.value),)
+            ]
+        )

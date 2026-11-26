@@ -118,7 +118,7 @@ def test_no_candidate_url_carries_a_candidate_identifier(account_client: TestCli
 
     candidate_paths = [path for path in paths if path.startswith("/api/v1/candidates")]
     assert candidate_paths
-    allowed_params = {"{skill_id}", "{project_id}", "{evidence_id}"}
+    allowed_params = {"{skill_id}", "{project_id}", "{evidence_id}", "{purpose}"}
     assert all(
         all(part in allowed_params for part in path.split("/") if part.startswith("{"))
         for path in candidate_paths

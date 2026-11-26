@@ -55,6 +55,19 @@ class SkillLevel(StrEnum):
     ADVANCED = "advanced"
 
 
+class ConsentPurpose(StrEnum):
+    """What the candidate may allow sharing of (US-08, FR-019, decision D-09).
+
+    Every purpose is denied until the candidate grants it explicitly: there is no shared profile
+    by default. ``DISCOVERY`` is what lets a company find the pseudonymised profile at all; the
+    other two decide which fields that projection may include (built by task B-06).
+    """
+
+    DISCOVERY = "discovery"
+    LOCATION = "location"
+    SKILLS = "skills"
+
+
 def _utc_now() -> datetime:
     """Return the current time as a timezone-aware UTC datetime."""
     return datetime.now(UTC)
@@ -247,4 +260,47 @@ class CandidateProjectEvidenceAudit(Base):
     after: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_utc_now
+    )
+
+
+class CandidateConsent(Base):
+    """One decision of the candidate about one purpose, with its history (US-08, FR-019).
+
+    A row records the *current* state of a purpose: granting and revoking keep the same row and
+    move ``granted_at`` / ``revoked_at``, so ``GET`` always reflects the truth and the last
+    decision keeps its date. ``policy_version`` is the version of the privacy text the candidate
+    saw, so consent can be traced to what was explained at the time.
+
+    There is at most one row per purpose. Absence of a row means "never decided", which is
+    treated as not granted: a new profile shares nothing.
+    """
+
+    __tablename__ = "candidate_consents"
+    __table_args__ = (
+        UniqueConstraint(
+            "candidate_id", "purpose", name="uq_candidate_consents_candidate_id_purpose"
+        ),
+        CheckConstraint(
+            "purpose IN ('discovery', 'location', 'skills')",
+            name="ck_candidate_consents_purpose",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    candidate_id: Mapped[int] = mapped_column(
+        ForeignKey("candidate_profiles.id", ondelete="CASCADE"), nullable=False
+    )
+    purpose: Mapped[str] = mapped_column(String(20), nullable=False)
+    granted: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default=false()
+    )
+    granted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    policy_version: Mapped[str] = mapped_column(String(20), nullable=False)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_utc_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_utc_now, onupdate=_utc_now
     )
