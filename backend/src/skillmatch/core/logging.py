@@ -14,6 +14,36 @@ from contextvars import ContextVar
 from datetime import UTC, datetime
 from typing import Any, Final
 
+REDACTED_PLACEHOLDER: Final = "[redacted]"
+"""What replaces a sensitive value in a log line."""
+
+SENSITIVE_KEYS: Final[frozenset[str]] = frozenset(
+    {
+        "display_name",
+        "summary",
+        "city",
+        "languages",
+        "skills",
+        "email",
+        "phone",
+        "password",
+        "password_hash",
+        "token",
+        "access_token",
+        "authorization",
+        "cookie",
+        "candidate",
+        "profile",
+        "projection",
+    }
+)
+"""Field names that must never reach a log line, even when a caller passes them by mistake.
+
+This is the log half of the non-leakage requirement (FR-012, B-06): logs carry identifiers and
+outcomes, never personal data, but a redaction list makes the rule enforced instead of agreed.
+``projection`` covers the whole pseudonymised payload, which must be logged as a count or an id.
+"""
+
 REQUEST_ID_HEADER: Final = "X-Request-ID"
 """Header used to receive and return the correlation id of a request."""
 
@@ -76,7 +106,7 @@ class JsonFormatter(logging.Formatter):
 
         payload.update(
             {
-                key: value
+                key: REDACTED_PLACEHOLDER if key in SENSITIVE_KEYS else value
                 for key, value in record.__dict__.items()
                 if key not in _RESERVED_ATTRIBUTES and not key.startswith("_")
             }
@@ -92,7 +122,7 @@ def configure_logging(level: str = "INFO") -> None:
     """Install the JSON formatter on the application's logger.
 
     Args:
-        level: Minimum level to emit, as a name (``DEBUG``, ``INFO``…).
+        level: Minimum level to emit, as a name (``DEBUG``, ``INFO``...).
 
     The root logger keeps its handlers untouched: this only reconfigures the ``skillmatch``
     logger, so uvicorn's own output is unaffected.
