@@ -7,7 +7,7 @@
 #   EXPECTED_REVISION  Optional commit SHA the image must be labelled with.
 #
 # Used by CI (job "Infra") and by the publish workflow, so a pull request and a release run the
-# same checks. Needs Docker and curl. It starts one throwaway container without a database:
+# same checks. Needs Docker, curl and openssl. It starts one throwaway container without a database:
 # GET /health is a liveness probe and must not depend on one.
 
 set -euo pipefail
@@ -73,8 +73,19 @@ else
 fi
 
 # 5) The application starts and answers its health check.
+# Generate a throwaway secret for this isolated smoke-test container.
+# It is never stored in the image or printed to the logs.
+if ! command -v openssl >/dev/null 2>&1; then
+  echo "openssl is required to generate a temporary smoke-test secret" >&2
+  exit 2
+fi
+smoke_secret="$(openssl rand -hex 32)"
+
 container="$(docker run --detach --publish 127.0.0.1::8000 \
+  --env "SKILLMATCH_AUTH_SERVICE_SECRET=${smoke_secret}" \
   --cap-drop ALL --security-opt no-new-privileges:true "${image}")"
+
+unset smoke_secret
 address="$(docker port "${container}" 8000/tcp)"
 address="${address%%$'\n'*}"
 base_url="http://${address}"
