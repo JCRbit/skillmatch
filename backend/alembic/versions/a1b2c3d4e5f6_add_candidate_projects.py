@@ -1,7 +1,7 @@
 """add candidate projects.
 
 Revision ID: a1b2c3d4e5f6
-Revises: 5d1e7a3c9b24
+Revises: 174019ed5756
 Create Date: 2026-11-26 12:00:00.000000
 """
 
@@ -13,7 +13,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "a1b2c3d4e5f6"
-down_revision: str | Sequence[str] | None = "5d1e7a3c9b24"
+down_revision: str | Sequence[str] | None = "174019ed5756"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
