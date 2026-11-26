@@ -73,9 +73,9 @@ Este log es la fuente de verdad de las **decisiones de producto y proceso** (qu�
 - **Valida:** Isabela + Juan.
 - **Contexto (§6.5):** cada skill tiene identificador, nombre canónico, alias, categoría, descripción operacional y, cuando aplique, relación con un concepto ESCO. Ejemplo: "Postgres" → "PostgreSQL"; Java no se fusiona con JavaScript. Los perfiles de rol son un conjunto pequeño y versionado de skills esenciales y deseables.
 - **Alternativas:** la v5.0 descarta implícitamente un catálogo abierto y sin control de alias (normalización por equivalencias controladas), pero no documenta una alternativa explícita de catálogo.
-- **Implicación en el repo:** coherente con [`DATA_MODEL.md`](DATA_MODEL.md) ("canonical skill taxonomy IDs plus observed raw terms and evidence"). Hay que **añadir la referencia ESCO** al modelo de datos y a [`REQUIREMENTS.md`](REQUIREMENTS.md), que hoy no la menciona.
+- **Implicación en el repo:** D-03 queda reflejada en `DATA_MODEL.md` y `REQUIREMENTS.md`: el catálogo local proporciona los identificadores canónicos, conserva los términos originales y admite referencias ESCO opcionales. La resolución de alias utiliza coincidencia exacta normalizada y evita colisiones entre skills distintas.
 - **Impacto si no se decide:** el matching no puede explicar razones por requisito (depende de `D-06`) y la comparabilidad entre vacante y perfil se queda en coincidencia textual.
-- **Estado:** DECISION_APPROVED · 20/11/2026 · Responsable: Vanessa (PO) · Evidencia: issue [S-01] (taxonomía curada ~80 skills con referencia ESCO) y REQUIREMENTS.md (FR-004).
+- **Estado:** DECISION_APPROVED · 20/11/2026 · Responsable: Vanessa (PO) · Evidencia: issue [S-01] (taxonomía curada de ~80 skills con referencia ESCO).
 
 ### `D-04` — Fuente de proyectos
 

@@ -47,6 +47,15 @@ Estados permitidos: `NOT_STARTED`, `IN_PROGRESS`, `BLOCKED`, `VERIFIED`, `DEFERR
 | NFR-011 | Accesibilidad/usabilidad | Flujos principales probados en móvil/desktop y navegación por teclado básica (`[E-07]`) | P1 |
 
 
+## Taxonomía de skills — D-03
+
+- El producto utiliza un catálogo local curado y versionado de aproximadamente 80 skills, con ESCO como referencia externa cuando existe una correspondencia aplicable.
+- Cada entrada del catálogo contiene identificador canónico, nombre, alias, categoría y descripción operacional. La referencia ESCO es opcional y no sustituye la identificación local.
+- La normalización debe resolver los alias a un único identificador canónico, mantener Java y JavaScript como skills independientes y conservar el término original observado.
+
+>> **Verificación de S-01:** catálogo de 80 skills cargable desde el paquete, identificadores únicos, ausencia de colisiones entre alias de distintas skills y pruebas que demuestren que Java y JavaScript se resuelven por separado.
+
+
 ## Entregables de evaluación
 
 - Código modular con pruebas unitarias/integración, tipado y documentación.

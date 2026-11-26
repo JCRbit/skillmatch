@@ -19,6 +19,27 @@ Nota: `VERIFIED` solo cuando hay evidencia de test/reproducible; `NOT_IMPLEMENTE
 |---|---|---|---|---|---|---|---|---|---|---|
 | FR-01 / FR-002 / FR-003 / FR-004 / FR-005 / FR-006 / FR-007 / FR-008 / FR-009 / FR-010 / FR-011 / FR-012 / FR-013 / FR-014 / FR-015 / FR-016 / FR-017 / FR-018 / FR-019 / FR-020 | Registro y CRUD dos roles (Candidate/Company); ingestión ofertas (API/scraping ético); análisis CV PDF; análisis GitHub API; matching embeddings + modelo ranking entrenado; % afinidad explicable; interés mutuo; desbloqueo contacto; asistente RAG empresa/oferta + preparación entrevista; agente mejora perfil + carta presentación; dashboard empresa; auditoría acciones; consentimiento/GDPR; Apply Copilot (stretch) | docs/REQUIREMENTS.md (FR-001 a FR-020); docs/ARCHITECTURE.md; docs/ROADMAP_6_WEEKS.md | COVERED (FR-001 a FR-020 presentes); PARTIAL (ranking entrenado: FR-010 indica que solo se llama "entrenado" si hay entrenamiento verificable; existe como requisito P1 con baseline) | identity, candidates, companies, jobs, ingestion, documents, github_evidence, matching, interactions, rag, agent_assist, audit, dashboard, browser_extension | Ver requisitos individuales por documento | Unit + integration + fixtures sintéticos | Código + tests + dataset sintético + evidencia de evaluación | Depende de esquema DB, auth, embeddings, datos sintéticos | P0 (FR-001 a FR-019); P1 (FR-010 ranking entrenado, FR-015 asistencia entrevista, FR-017 dashboard); P2 (FR-020 Apply Copilot) | FR-010: sin datos etiquetados no hay ranking entrenado; debe registrarse como riesgo. FR-015: requiere LangGraph para flujo de entrevista/feedback personalizado (ver Brecha A). FR-017: métrica 60% reducción cribado debe ser medida, no asumida (ver Brecha C). |
 
+## Trazabilidad de implementación — S-01: Taxonomía v1
+
+**Issue:** [S-01 — Taxonomía v1](https://github.com/JCRbit/skillmatch/issues/24)
+**Decisión relacionada:** D-03 — Taxonomía
+**Dependencia:** G-01 (#18), aprobada y cerrada.
+
+| Elemento | Definición / evidencia |
+|---|---|
+| Alcance | Catálogo local curado de aproximadamente 80 skills, con identificadores canónicos, alias, categoría, descripción operacional y referencia ESCO cuando exista. |
+| Documentación | `docs/DATA_MODEL.md`, `docs/REQUIREMENTS.md` (Taxonomía de skills — D-03), `docs/DECISION_LOG.md` (D-03). |
+| Catálogo | `backend/src/skillmatch/modules/skills/data/skills_v1.csv`. |
+| Implementación | `taxonomy.py`: carga y validación del catálogo. `normalizer.py`: normalización y resolución exacta de alias. `__init__.py`: API pública del módulo. |
+| Pruebas | `backend/tests/unit/test_skills_taxonomy.py` y `backend/tests/unit/test_skills_normalizer.py`. |
+| Criterios verificados | 80 skills cargables; identificadores canónicos únicos; ausencia de colisiones entre alias de skills distintas; Java y JavaScript resueltos como identificadores independientes; alias desconocidos y coincidencias parciales sin resolución. |
+| Evidencia de ejecución | 12 pruebas específicas aprobadas; suite completa: 85 pruebas aprobadas. Ruff: comprobaciones correctas y 45 archivos formateados. Mypy: 42 archivos sin errores. |
+| Evidencia de distribución | Wheel construido correctamente; CSV incluido en el paquete; instalación de comprobación con 80 skills y 214 entradas en el índice de alias. |
+| Estado de implementación | `VERIFIED` mediante pruebas reproducibles locales. |
+| Pendiente de DoD | Revisión humana cruzada de Juan Manuel y cierre de la revisión de la issue. |
+
+> **Alcance de la verificación:** estos resultados acreditan la carga del catálogo, su normalización y la resolución de alias. No acreditan todavía la integración de las skills en los perfiles de candidatos, ofertas o procesos de matching.
+
 ## Detalle de requisitos críticos del brief oficial (no omitidos)
 
 ### Brecha A — Entrevista inicial con IA y feedback personalizado (LangGraph)

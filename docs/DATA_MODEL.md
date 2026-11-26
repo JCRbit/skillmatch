@@ -9,7 +9,8 @@ No es un esquema SQL definitivo; el esquema físico debe seguir a la auditoría 
 - `candidate_profiles`: user_id, nombre público/pseudónimo, ciudad/ubicación opcional, modalidad, idiomas, resumen confirmado, estado, consent timestamps.
   - **Implementado en B-03** (migración `5d1e7a3c9b24`): `user_id` único, `display_name` (pseudónimo), `summary`, `city`, `languages`, preferencias (`work_modes`, `contract_types`, `preferred_locations`, `interests`) y flags de visibilidad (`discoverable`, `show_location`, ambos `false` por defecto). Pendiente: estado y consent timestamps (B-05). Ver [CANDIDATE_PROFILE.md](CANDIDATE_PROFILE.md).
 - `candidate_skills`: candidate_id, skill canonical, nivel auto-declarado/evaluado, source/evidence refs, confidence, updated_at.
-  - **Implementado en B-03**: skills **declaradas** (`name`, `name_key` único por candidato, `level` autodeclarado). Pendiente: taxonomía canónica, `source`/evidencias y `confidence`.
+  - **Implementado en B-03**: skills **declaradas** (`name`, `name_key` único por candidato, `level` autodeclarado).
+  - **Evolución prevista**: integración con la taxonomía canónica de S-01 mediante `skill_canonical_id`, `observed_raw_term` y `taxonomy_version`, además de referencias a evidencias y `confidence`. Estos campos no forman parte todavía de la migración B-03.
 - `candidate_documents`: owner_id, private storage key, MIME, hash, state, retention deadline, extracted text ref (si se guarda), parser version, deleted_at.
 - `projects`: owner_id, URL GitHub/portfolio, repo ID, description, evidence refs, ingestion time, consent/source, repo visibility.
 - `companies`: id, name, approved domains/verification state, public facts source.
@@ -27,6 +28,7 @@ No es un esquema SQL definitivo; el esquema físico debe seguir a la auditoría 
 - `background_jobs`: job type, idempotency key, status, retries, started/completed/error category, not sensitive payload dump.
 - `model_registry` / `evaluation_runs`: model and prompt hashes, dataset version, metric, subgroup analysis, run config, artifacts location.
 
+
 ## Important constraints
 
 - Separate `profile data` from `blind review projection`; compute the latter server-side with explicit allowlist of fields.
@@ -34,4 +36,14 @@ No es un esquema SQL definitivo; el esquema físico debe seguir a la auditoría 
 - Foreign keys and deletion workflows must cover document files, vector points, exports and logs according to retention/legal-hold policy.
 - `job_sources` must record source permission/status; scraper can be disabled per source.
 - Do not keep arbitrary CV text in vector payloads or logs by default.
-- Use canonical skill taxonomy IDs plus observed raw terms and evidence; don't infer expertise from language alone.
+
+
+## Skills Taxonomy
+
+- The local skills catalog is curated, versioned, and serves as the canonical source of identifiers for normalization.
+- Each skill has a `canonical_id`, canonical name, aliases, category, and operational description.
+- Aliases are resolved via normalized exact matching to a single `canonical_id`. Collisions between different skills are not permitted.
+- The original observed term is preserved separately from the canonical identifier to which it is normalized.
+- Each skill may include an optional ESCO reference: label, URI, concept type, and concept status. ESCO serves as an external reference and does not replace the local catalog.
+- The absence of a verified ESCO match does not prevent a skill from being part of the local catalog.
+- Do not infer expertise from the language used or from the mere presence of a technology.
