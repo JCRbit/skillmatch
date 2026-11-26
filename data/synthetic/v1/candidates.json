@@ -1,0 +1,1031 @@
+[
+  {
+    "candidate_id": "can-001",
+    "display_name": "Candidato Sintético 01",
+    "email": "candidate01@example.com",
+    "location": "Madrid, ES",
+    "modality_preference": "hybrid",
+    "availability": "immediate",
+    "years_experience": 0,
+    "summary": "Perfil junior ficticio orientado a backend Python y APIs.",
+    "languages": [
+      {
+        "language": "es",
+        "level": "native_or_c1"
+      },
+      {
+        "language": "en",
+        "level": "b1"
+      }
+    ],
+    "skills": [
+      {
+        "canonical_id": "python",
+        "observed_raw_term": "Python",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-001"
+        ]
+      },
+      {
+        "canonical_id": "fastapi",
+        "observed_raw_term": "FastAPI",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "beginner",
+        "evidence_refs": [
+          "prj-001"
+        ]
+      },
+      {
+        "canonical_id": "sql",
+        "observed_raw_term": "SQL",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-001",
+          "prj-002"
+        ]
+      },
+      {
+        "canonical_id": "git",
+        "observed_raw_term": "Git",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-001",
+          "prj-002"
+        ]
+      },
+      {
+        "canonical_id": "docker",
+        "observed_raw_term": "Docker",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "beginner",
+        "evidence_refs": [
+          "prj-002"
+        ]
+      }
+    ],
+    "project_ids": [
+      "prj-001",
+      "prj-002"
+    ],
+    "visibility": "public",
+    "consent_version": "consent-v1",
+    "created_at": "2026-11-10T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "candidate_id": "can-002",
+    "display_name": "Candidato Sintético 02",
+    "email": "candidate02@example.com",
+    "location": "Barcelona, ES",
+    "modality_preference": "remote",
+    "availability": "2_weeks",
+    "years_experience": 1,
+    "summary": "Perfil junior ficticio de frontend con React y foco en accesibilidad.",
+    "languages": [
+      {
+        "language": "es",
+        "level": "native_or_c1"
+      },
+      {
+        "language": "en",
+        "level": "b2"
+      }
+    ],
+    "skills": [
+      {
+        "canonical_id": "javascript",
+        "observed_raw_term": "JavaScript",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-003"
+        ]
+      },
+      {
+        "canonical_id": "react",
+        "observed_raw_term": "React.js",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-003"
+        ]
+      },
+      {
+        "canonical_id": "html",
+        "observed_raw_term": "HTML",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-003"
+        ]
+      },
+      {
+        "canonical_id": "css",
+        "observed_raw_term": "CSS",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-003"
+        ]
+      },
+      {
+        "canonical_id": "git",
+        "observed_raw_term": "Git",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-003"
+        ]
+      }
+    ],
+    "project_ids": [
+      "prj-003"
+    ],
+    "visibility": "public",
+    "consent_version": "consent-v1",
+    "created_at": "2026-11-10T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "candidate_id": "can-003",
+    "display_name": "Candidato Sintético 03",
+    "email": "candidate03@example.com",
+    "location": "Valencia, ES",
+    "modality_preference": "hybrid",
+    "availability": "1_month",
+    "years_experience": 1,
+    "summary": "Perfil junior ficticio con base en QA manual y automatización inicial.",
+    "languages": [
+      {
+        "language": "es",
+        "level": "native_or_c1"
+      }
+    ],
+    "skills": [
+      {
+        "canonical_id": "api_testing",
+        "observed_raw_term": "API Testing",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-004"
+        ]
+      },
+      {
+        "canonical_id": "test_design",
+        "observed_raw_term": "Diseño de pruebas",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-004"
+        ]
+      },
+      {
+        "canonical_id": "python",
+        "observed_raw_term": "Python",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "beginner",
+        "evidence_refs": [
+          "prj-004"
+        ]
+      },
+      {
+        "canonical_id": "pytest",
+        "observed_raw_term": "pytest",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "beginner",
+        "evidence_refs": [
+          "prj-004"
+        ]
+      },
+      {
+        "canonical_id": "git",
+        "observed_raw_term": "Git",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "beginner",
+        "evidence_refs": [
+          "prj-004"
+        ]
+      }
+    ],
+    "project_ids": [
+      "prj-004"
+    ],
+    "visibility": "public",
+    "consent_version": "consent-v1",
+    "created_at": "2026-11-10T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "candidate_id": "can-004",
+    "display_name": "Candidato Sintético 04",
+    "email": "candidate04@example.com",
+    "location": "Sevilla, ES",
+    "modality_preference": "remote",
+    "availability": "immediate",
+    "years_experience": 0,
+    "summary": "Perfil junior ficticio de datos con SQL y Python.",
+    "languages": [
+      {
+        "language": "es",
+        "level": "native_or_c1"
+      },
+      {
+        "language": "en",
+        "level": "b1"
+      }
+    ],
+    "skills": [
+      {
+        "canonical_id": "sql",
+        "observed_raw_term": "SQL",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-005"
+        ]
+      },
+      {
+        "canonical_id": "python",
+        "observed_raw_term": "Python",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-005"
+        ]
+      },
+      {
+        "canonical_id": "postgresql",
+        "observed_raw_term": "Postgres",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "beginner",
+        "evidence_refs": [
+          "prj-005"
+        ]
+      },
+      {
+        "canonical_id": "git",
+        "observed_raw_term": "Git",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "beginner",
+        "evidence_refs": [
+          "prj-005"
+        ]
+      }
+    ],
+    "project_ids": [
+      "prj-005"
+    ],
+    "visibility": "public",
+    "consent_version": "consent-v1",
+    "created_at": "2026-11-10T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "candidate_id": "can-005",
+    "display_name": "Candidato Sintético 05",
+    "email": "candidate05@example.com",
+    "location": "Bilbao, ES",
+    "modality_preference": "hybrid",
+    "availability": "2_weeks",
+    "years_experience": 2,
+    "summary": "Perfil junior ficticio full stack con Node.js y React.",
+    "languages": [
+      {
+        "language": "es",
+        "level": "native_or_c1"
+      },
+      {
+        "language": "en",
+        "level": "b2"
+      }
+    ],
+    "skills": [
+      {
+        "canonical_id": "javascript",
+        "observed_raw_term": "JS",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-006"
+        ]
+      },
+      {
+        "canonical_id": "nodejs",
+        "observed_raw_term": "Node.js",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-006"
+        ]
+      },
+      {
+        "canonical_id": "react",
+        "observed_raw_term": "React",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-006"
+        ]
+      },
+      {
+        "canonical_id": "sql",
+        "observed_raw_term": "SQL",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "beginner",
+        "evidence_refs": [
+          "prj-006"
+        ]
+      },
+      {
+        "canonical_id": "git",
+        "observed_raw_term": "Git",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-006"
+        ]
+      }
+    ],
+    "project_ids": [
+      "prj-006"
+    ],
+    "visibility": "public",
+    "consent_version": "consent-v1",
+    "created_at": "2026-11-10T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "candidate_id": "can-006",
+    "display_name": "Candidato Sintético 06",
+    "email": "candidate06@example.com",
+    "location": "Zaragoza, ES",
+    "modality_preference": "onsite",
+    "availability": "1_month",
+    "years_experience": 1,
+    "summary": "Perfil junior ficticio de soporte cloud y scripting en Python.",
+    "languages": [
+      {
+        "language": "es",
+        "level": "native_or_c1"
+      }
+    ],
+    "skills": [
+      {
+        "canonical_id": "python",
+        "observed_raw_term": "Python",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-007"
+        ]
+      },
+      {
+        "canonical_id": "linux",
+        "observed_raw_term": "Linux",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-007"
+        ]
+      },
+      {
+        "canonical_id": "bash",
+        "observed_raw_term": "Bash",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "beginner",
+        "evidence_refs": [
+          "prj-007"
+        ]
+      },
+      {
+        "canonical_id": "git",
+        "observed_raw_term": "Git",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "beginner",
+        "evidence_refs": [
+          "prj-007"
+        ]
+      }
+    ],
+    "project_ids": [
+      "prj-007"
+    ],
+    "visibility": "public",
+    "consent_version": "consent-v1",
+    "created_at": "2026-11-10T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "candidate_id": "can-007",
+    "display_name": "Candidato Sintético 07",
+    "email": "candidate07@example.com",
+    "location": "Málaga, ES",
+    "modality_preference": "remote",
+    "availability": "immediate",
+    "years_experience": 1,
+    "summary": "Perfil junior ficticio de DevOps con Docker y CI/CD.",
+    "languages": [
+      {
+        "language": "es",
+        "level": "native_or_c1"
+      },
+      {
+        "language": "en",
+        "level": "b1"
+      }
+    ],
+    "skills": [
+      {
+        "canonical_id": "docker",
+        "observed_raw_term": "Docker",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-008"
+        ]
+      },
+      {
+        "canonical_id": "cicd",
+        "observed_raw_term": "CI/CD",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "beginner",
+        "evidence_refs": [
+          "prj-008"
+        ]
+      },
+      {
+        "canonical_id": "github_actions",
+        "observed_raw_term": "GitHub Actions",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "beginner",
+        "evidence_refs": [
+          "prj-008"
+        ]
+      },
+      {
+        "canonical_id": "linux",
+        "observed_raw_term": "GNU/Linux",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-008"
+        ]
+      },
+      {
+        "canonical_id": "git",
+        "observed_raw_term": "Git",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-008"
+        ]
+      }
+    ],
+    "project_ids": [
+      "prj-008"
+    ],
+    "visibility": "public",
+    "consent_version": "consent-v1",
+    "created_at": "2026-11-10T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "candidate_id": "can-008",
+    "display_name": "Candidato Sintético 08",
+    "email": "candidate08@example.com",
+    "location": "Madrid, ES",
+    "modality_preference": "hybrid",
+    "availability": "2_weeks",
+    "years_experience": 0,
+    "summary": "Perfil junior ficticio backend Java con interés en APIs.",
+    "languages": [
+      {
+        "language": "es",
+        "level": "native_or_c1"
+      },
+      {
+        "language": "en",
+        "level": "b1"
+      }
+    ],
+    "skills": [
+      {
+        "canonical_id": "java",
+        "observed_raw_term": "Java",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-009"
+        ]
+      },
+      {
+        "canonical_id": "sql",
+        "observed_raw_term": "SQL",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "beginner",
+        "evidence_refs": [
+          "prj-009"
+        ]
+      },
+      {
+        "canonical_id": "git",
+        "observed_raw_term": "Git",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "beginner",
+        "evidence_refs": [
+          "prj-009"
+        ]
+      },
+      {
+        "canonical_id": "spring_boot",
+        "observed_raw_term": "Spring Boot",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "beginner",
+        "evidence_refs": [
+          "prj-009"
+        ]
+      }
+    ],
+    "project_ids": [
+      "prj-009"
+    ],
+    "visibility": "public",
+    "consent_version": "consent-v1",
+    "created_at": "2026-11-10T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "candidate_id": "can-009",
+    "display_name": "Candidato Sintético 09",
+    "email": "candidate09@example.com",
+    "location": "Valladolid, ES",
+    "modality_preference": "remote",
+    "availability": "immediate",
+    "years_experience": 1,
+    "summary": "Perfil junior ficticio frontend con TypeScript y pruebas.",
+    "languages": [
+      {
+        "language": "es",
+        "level": "native_or_c1"
+      },
+      {
+        "language": "en",
+        "level": "b2"
+      }
+    ],
+    "skills": [
+      {
+        "canonical_id": "typescript",
+        "observed_raw_term": "TypeScript",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-010"
+        ]
+      },
+      {
+        "canonical_id": "react",
+        "observed_raw_term": "React",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-010"
+        ]
+      },
+      {
+        "canonical_id": "vitest",
+        "observed_raw_term": "Vitest",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "beginner",
+        "evidence_refs": [
+          "prj-010"
+        ]
+      },
+      {
+        "canonical_id": "git",
+        "observed_raw_term": "Git",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-010"
+        ]
+      }
+    ],
+    "project_ids": [
+      "prj-010"
+    ],
+    "visibility": "public",
+    "consent_version": "consent-v1",
+    "created_at": "2026-11-10T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "candidate_id": "can-010",
+    "display_name": "Candidato Sintético 10",
+    "email": "candidate10@example.com",
+    "location": "Granada, ES",
+    "modality_preference": "hybrid",
+    "availability": "1_month",
+    "years_experience": 2,
+    "summary": "Perfil junior ficticio backend Node.js con MongoDB.",
+    "languages": [
+      {
+        "language": "es",
+        "level": "native_or_c1"
+      },
+      {
+        "language": "en",
+        "level": "b1"
+      }
+    ],
+    "skills": [
+      {
+        "canonical_id": "nodejs",
+        "observed_raw_term": "Node",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-011"
+        ]
+      },
+      {
+        "canonical_id": "expressjs",
+        "observed_raw_term": "Express.js",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-011"
+        ]
+      },
+      {
+        "canonical_id": "mongodb",
+        "observed_raw_term": "MongoDB",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "beginner",
+        "evidence_refs": [
+          "prj-011"
+        ]
+      },
+      {
+        "canonical_id": "git",
+        "observed_raw_term": "Git",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-011"
+        ]
+      }
+    ],
+    "project_ids": [
+      "prj-011"
+    ],
+    "visibility": "public",
+    "consent_version": "consent-v1",
+    "created_at": "2026-11-10T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "candidate_id": "can-011",
+    "display_name": "Candidato Sintético 11",
+    "email": "candidate11@example.com",
+    "location": "Alicante, ES",
+    "modality_preference": "remote",
+    "availability": "2_weeks",
+    "years_experience": 1,
+    "summary": "Perfil junior ficticio con enfoque en documentación técnica y QA.",
+    "languages": [
+      {
+        "language": "es",
+        "level": "native_or_c1"
+      },
+      {
+        "language": "en",
+        "level": "b2"
+      }
+    ],
+    "skills": [
+      {
+        "canonical_id": "test_design",
+        "observed_raw_term": "Test Design",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-012"
+        ]
+      },
+      {
+        "canonical_id": "api_testing",
+        "observed_raw_term": "Pruebas de API",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-012"
+        ]
+      },
+      {
+        "canonical_id": "technical_documentation",
+        "observed_raw_term": "Documentación técnica",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-012"
+        ]
+      },
+      {
+        "canonical_id": "git",
+        "observed_raw_term": "Git",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "beginner",
+        "evidence_refs": [
+          "prj-012"
+        ]
+      }
+    ],
+    "project_ids": [
+      "prj-012"
+    ],
+    "visibility": "public",
+    "consent_version": "consent-v1",
+    "created_at": "2026-11-10T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "candidate_id": "can-012",
+    "display_name": "Candidato Sintético 12",
+    "email": "candidate12@example.com",
+    "location": "Madrid, ES",
+    "modality_preference": "hybrid",
+    "availability": "immediate",
+    "years_experience": 0,
+    "summary": "Perfil junior ficticio de datos con interés en analítica y comunicación.",
+    "languages": [
+      {
+        "language": "es",
+        "level": "native_or_c1"
+      },
+      {
+        "language": "en",
+        "level": "b1"
+      }
+    ],
+    "skills": [
+      {
+        "canonical_id": "python",
+        "observed_raw_term": "Python",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "beginner",
+        "evidence_refs": [
+          "prj-013"
+        ]
+      },
+      {
+        "canonical_id": "sql",
+        "observed_raw_term": "SQL",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "beginner",
+        "evidence_refs": [
+          "prj-013"
+        ]
+      },
+      {
+        "canonical_id": "communication",
+        "observed_raw_term": "Comunicación",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-013"
+        ]
+      },
+      {
+        "canonical_id": "teamwork",
+        "observed_raw_term": "Trabajo en equipo",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-013"
+        ]
+      }
+    ],
+    "project_ids": [
+      "prj-013"
+    ],
+    "visibility": "public",
+    "consent_version": "consent-v1",
+    "created_at": "2026-11-10T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "candidate_id": "can-013",
+    "display_name": "Candidato Sintético 13",
+    "email": "candidate13@example.com",
+    "location": "Santander, ES",
+    "modality_preference": "remote",
+    "availability": "3_months",
+    "years_experience": 1,
+    "summary": "Perfil junior ficticio full stack con Django y React.",
+    "languages": [
+      {
+        "language": "es",
+        "level": "native_or_c1"
+      },
+      {
+        "language": "en",
+        "level": "b1"
+      }
+    ],
+    "skills": [
+      {
+        "canonical_id": "python",
+        "observed_raw_term": "Python",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-014"
+        ]
+      },
+      {
+        "canonical_id": "django",
+        "observed_raw_term": "Django",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "beginner",
+        "evidence_refs": [
+          "prj-014"
+        ]
+      },
+      {
+        "canonical_id": "react",
+        "observed_raw_term": "React",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "beginner",
+        "evidence_refs": [
+          "prj-014"
+        ]
+      },
+      {
+        "canonical_id": "postgresql",
+        "observed_raw_term": "PostgreSQL",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "beginner",
+        "evidence_refs": [
+          "prj-014"
+        ]
+      },
+      {
+        "canonical_id": "git",
+        "observed_raw_term": "Git",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-014"
+        ]
+      }
+    ],
+    "project_ids": [
+      "prj-014"
+    ],
+    "visibility": "public",
+    "consent_version": "consent-v1",
+    "created_at": "2026-11-10T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "candidate_id": "can-014",
+    "display_name": "Candidato Sintético 14",
+    "email": "candidate14@example.com",
+    "location": "Murcia, ES",
+    "modality_preference": "onsite",
+    "availability": "2_weeks",
+    "years_experience": 1,
+    "summary": "Perfil junior ficticio de plataforma con Linux, Docker y Terraform básico.",
+    "languages": [
+      {
+        "language": "es",
+        "level": "native_or_c1"
+      }
+    ],
+    "skills": [
+      {
+        "canonical_id": "linux",
+        "observed_raw_term": "Linux",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-015"
+        ]
+      },
+      {
+        "canonical_id": "docker",
+        "observed_raw_term": "Docker",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-015"
+        ]
+      },
+      {
+        "canonical_id": "terraform",
+        "observed_raw_term": "Terraform",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "beginner",
+        "evidence_refs": [
+          "prj-015"
+        ]
+      },
+      {
+        "canonical_id": "git",
+        "observed_raw_term": "Git",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "beginner",
+        "evidence_refs": [
+          "prj-015"
+        ]
+      }
+    ],
+    "project_ids": [
+      "prj-015"
+    ],
+    "visibility": "public",
+    "consent_version": "consent-v1",
+    "created_at": "2026-11-10T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "candidate_id": "can-015",
+    "display_name": "Candidato Sintético 15",
+    "email": "candidate15@example.com",
+    "location": "La Coruña, ES",
+    "modality_preference": "hybrid",
+    "availability": "immediate",
+    "years_experience": 0,
+    "summary": "Perfil junior ficticio frontend con Vue y diseño web.",
+    "languages": [
+      {
+        "language": "es",
+        "level": "native_or_c1"
+      },
+      {
+        "language": "en",
+        "level": "b1"
+      }
+    ],
+    "skills": [
+      {
+        "canonical_id": "javascript",
+        "observed_raw_term": "JavaScript",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "beginner",
+        "evidence_refs": [
+          "prj-016"
+        ]
+      },
+      {
+        "canonical_id": "vuejs",
+        "observed_raw_term": "Vue.js",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "beginner",
+        "evidence_refs": [
+          "prj-016"
+        ]
+      },
+      {
+        "canonical_id": "html",
+        "observed_raw_term": "HTML",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-016"
+        ]
+      },
+      {
+        "canonical_id": "css",
+        "observed_raw_term": "CSS",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "intermediate",
+        "evidence_refs": [
+          "prj-016"
+        ]
+      },
+      {
+        "canonical_id": "git",
+        "observed_raw_term": "Git",
+        "taxonomy_version": "skills_v1",
+        "declared_level": "beginner",
+        "evidence_refs": [
+          "prj-016"
+        ]
+      }
+    ],
+    "project_ids": [
+      "prj-016"
+    ],
+    "visibility": "public",
+    "consent_version": "consent-v1",
+    "created_at": "2026-11-10T10:00:00Z",
+    "updated_at": "2026-11-20T10:00:00Z"
+  }
+]

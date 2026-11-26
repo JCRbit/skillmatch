@@ -1,0 +1,33 @@
+{
+  "dataset": "skillmatch-synthetic",
+  "version": "v1",
+  "generated_at": "2026-11-26T00:00:00Z",
+  "description": "Synthetic seed dataset v1 for SkillMatch MVP development and demos.",
+  "counts": {
+    "companies": 3,
+    "vacancies": 8,
+    "candidates": 15,
+    "projects": 16
+  },
+  "files": [
+    "README.md",
+    "manifest.json",
+    "companies.json",
+    "vacancies.json",
+    "candidates.json",
+    "projects.json",
+    "quality_report.json"
+  ],
+  "taxonomy_version": "skills_v1",
+  "dama_total_score_0_100": 100.0,
+  "no_real_data": true,
+  "schema_version": "1.0.0",
+  "checksums": {
+    "companies.json": "sha256:446db3a3f6f4d8907de247267dd8bd1eeb3dd724d49fb5aac1b133b4c69cef50",
+    "vacancies.json": "sha256:78733bdb5a3f3d7b8b36e7c49a44e5407504304bf101d71e6daa67c3932b3f7a",
+    "candidates.json": "sha256:02adb705dda48d539466f3db52df73d6d561fa3a6215d08f1c26d657461a2332",
+    "projects.json": "sha256:f6a7e8ed0486faaeaac824d25dea82f6d0399692be48ef997da3c3d14db4b9aa",
+    "quality_report.json": "sha256:7623bc41ef040a287fdb0c3097f9553d17fa3fb4e0d1dea832630ece6576b69f",
+    "README.md": "sha256:d83eb75e1b0dcb9a7f39440fb5052fa5be19a6d3afbbae03bdd67063c724d981"
+  }
+}
