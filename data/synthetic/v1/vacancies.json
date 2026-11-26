@@ -1,0 +1,310 @@
+[
+  {
+    "vacancy_id": "vac-001",
+    "company_id": "cmp-001",
+    "title": "Junior Backend Developer (Python)",
+    "description": "Vacante ficticia para desarrollar APIs y servicios backend en un equipo de producto SaaS.",
+    "seniority": "junior",
+    "location": "Madrid, ES",
+    "modality": "hybrid",
+    "contract_type": "full_time",
+    "salary_min": 22000,
+    "salary_max": 28000,
+    "salary_currency": "EUR",
+    "essential_skills": [
+      "python",
+      "fastapi",
+      "sql",
+      "git",
+      "docker"
+    ],
+    "desirable_skills": [
+      "postgresql",
+      "pytest",
+      "github_actions",
+      "linux"
+    ],
+    "languages": [
+      {
+        "language": "es",
+        "level": "native_or_c1"
+      },
+      {
+        "language": "en",
+        "level": "b1"
+      }
+    ],
+    "status": "published",
+    "published_at": "2026-11-01T09:00:00Z",
+    "expires_at": "2026-12-31T23:59:59Z",
+    "source": "synthetic_seed_v1"
+  },
+  {
+    "vacancy_id": "vac-002",
+    "company_id": "cmp-001",
+    "title": "Junior Frontend Developer (React)",
+    "description": "Vacante ficticia para construir interfaces web accesibles y mantenibles en React.",
+    "seniority": "junior",
+    "location": "Madrid, ES",
+    "modality": "remote",
+    "contract_type": "full_time",
+    "salary_min": 21000,
+    "salary_max": 27000,
+    "salary_currency": "EUR",
+    "essential_skills": [
+      "javascript",
+      "react",
+      "html",
+      "css",
+      "git"
+    ],
+    "desirable_skills": [
+      "typescript",
+      "vitest",
+      "tailwind_css",
+      "playwright"
+    ],
+    "languages": [
+      {
+        "language": "es",
+        "level": "native_or_c1"
+      },
+      {
+        "language": "en",
+        "level": "b1"
+      }
+    ],
+    "status": "published",
+    "published_at": "2026-11-03T09:00:00Z",
+    "expires_at": "2026-12-31T23:59:59Z",
+    "source": "synthetic_seed_v1"
+  },
+  {
+    "vacancy_id": "vac-003",
+    "company_id": "cmp-001",
+    "title": "Junior QA Automation Engineer",
+    "description": "Vacante ficticia para automatizar pruebas de APIs y web en un equipo ágil.",
+    "seniority": "junior",
+    "location": "Madrid, ES",
+    "modality": "hybrid",
+    "contract_type": "full_time",
+    "salary_min": 20000,
+    "salary_max": 26000,
+    "salary_currency": "EUR",
+    "essential_skills": [
+      "api_testing",
+      "test_design",
+      "git",
+      "python"
+    ],
+    "desirable_skills": [
+      "pytest",
+      "playwright",
+      "cicd",
+      "github_actions"
+    ],
+    "languages": [
+      {
+        "language": "es",
+        "level": "native_or_c1"
+      }
+    ],
+    "status": "published",
+    "published_at": "2026-11-05T09:00:00Z",
+    "expires_at": "2026-12-31T23:59:59Z",
+    "source": "synthetic_seed_v1"
+  },
+  {
+    "vacancy_id": "vac-004",
+    "company_id": "cmp-002",
+    "title": "Junior Data Analyst",
+    "description": "Vacante ficticia para análisis de datos, consultas SQL y soporte a dashboards.",
+    "seniority": "junior",
+    "location": "Barcelona, ES",
+    "modality": "hybrid",
+    "contract_type": "full_time",
+    "salary_min": 22000,
+    "salary_max": 29000,
+    "salary_currency": "EUR",
+    "essential_skills": [
+      "sql",
+      "python",
+      "postgresql",
+      "git"
+    ],
+    "desirable_skills": [
+      "docker",
+      "communication",
+      "teamwork",
+      "technical_documentation"
+    ],
+    "languages": [
+      {
+        "language": "es",
+        "level": "native_or_c1"
+      },
+      {
+        "language": "en",
+        "level": "b2"
+      }
+    ],
+    "status": "published",
+    "published_at": "2026-10-28T09:00:00Z",
+    "expires_at": "2026-12-20T23:59:59Z",
+    "source": "synthetic_seed_v1"
+  },
+  {
+    "vacancy_id": "vac-005",
+    "company_id": "cmp-002",
+    "title": "Junior Backend Developer (Node.js)",
+    "description": "Vacante ficticia para servicios backend en Node.js y APIs REST.",
+    "seniority": "junior",
+    "location": "Barcelona, ES",
+    "modality": "remote",
+    "contract_type": "full_time",
+    "salary_min": 23000,
+    "salary_max": 29000,
+    "salary_currency": "EUR",
+    "essential_skills": [
+      "javascript",
+      "nodejs",
+      "expressjs",
+      "sql",
+      "git"
+    ],
+    "desirable_skills": [
+      "typescript",
+      "docker",
+      "jest",
+      "mongodb"
+    ],
+    "languages": [
+      {
+        "language": "es",
+        "level": "native_or_c1"
+      },
+      {
+        "language": "en",
+        "level": "b1"
+      }
+    ],
+    "status": "published",
+    "published_at": "2026-11-02T09:00:00Z",
+    "expires_at": "2026-12-31T23:59:59Z",
+    "source": "synthetic_seed_v1"
+  },
+  {
+    "vacancy_id": "vac-006",
+    "company_id": "cmp-002",
+    "title": "Junior Full Stack Developer",
+    "description": "Vacante ficticia full stack con foco en producto web y buenas prácticas.",
+    "seniority": "junior",
+    "location": "Barcelona, ES",
+    "modality": "hybrid",
+    "contract_type": "full_time",
+    "salary_min": 24000,
+    "salary_max": 30000,
+    "salary_currency": "EUR",
+    "essential_skills": [
+      "javascript",
+      "react",
+      "nodejs",
+      "sql",
+      "git"
+    ],
+    "desirable_skills": [
+      "typescript",
+      "docker",
+      "postgresql",
+      "cicd"
+    ],
+    "languages": [
+      {
+        "language": "es",
+        "level": "native_or_c1"
+      },
+      {
+        "language": "en",
+        "level": "b2"
+      }
+    ],
+    "status": "published",
+    "published_at": "2026-11-06T09:00:00Z",
+    "expires_at": "2026-12-31T23:59:59Z",
+    "source": "synthetic_seed_v1"
+  },
+  {
+    "vacancy_id": "vac-007",
+    "company_id": "cmp-003",
+    "title": "Junior DevOps/Platform Assistant",
+    "description": "Vacante ficticia para apoyar automatización, contenedores y pipelines CI/CD.",
+    "seniority": "junior",
+    "location": "Valencia, ES",
+    "modality": "hybrid",
+    "contract_type": "internship",
+    "salary_min": 12000,
+    "salary_max": 18000,
+    "salary_currency": "EUR",
+    "essential_skills": [
+      "linux",
+      "git",
+      "docker",
+      "cicd"
+    ],
+    "desirable_skills": [
+      "github_actions",
+      "terraform",
+      "bash",
+      "aws"
+    ],
+    "languages": [
+      {
+        "language": "es",
+        "level": "native_or_c1"
+      },
+      {
+        "language": "en",
+        "level": "b1"
+      }
+    ],
+    "status": "published",
+    "published_at": "2026-11-08T09:00:00Z",
+    "expires_at": "2027-01-15T23:59:59Z",
+    "source": "synthetic_seed_v1"
+  },
+  {
+    "vacancy_id": "vac-008",
+    "company_id": "cmp-003",
+    "title": "Junior Cloud Support Developer",
+    "description": "Vacante ficticia para soporte técnico de plataforma cloud y scripting.",
+    "seniority": "junior",
+    "location": "Valencia, ES",
+    "modality": "onsite",
+    "contract_type": "full_time",
+    "salary_min": 20000,
+    "salary_max": 25000,
+    "salary_currency": "EUR",
+    "essential_skills": [
+      "python",
+      "linux",
+      "git",
+      "communication"
+    ],
+    "desirable_skills": [
+      "aws",
+      "docker",
+      "bash",
+      "technical_documentation"
+    ],
+    "languages": [
+      {
+        "language": "es",
+        "level": "native_or_c1"
+      }
+    ],
+    "status": "published",
+    "published_at": "2026-11-10T09:00:00Z",
+    "expires_at": "2027-01-31T23:59:59Z",
+    "source": "synthetic_seed_v1"
+  }
+]
