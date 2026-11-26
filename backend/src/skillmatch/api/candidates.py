@@ -26,6 +26,7 @@ from fastapi import APIRouter, Depends, Path, status
 
 from skillmatch.api.deps import SessionDep, require_roles, verify_resource_ownership
 from skillmatch.api.problems import problem_responses
+from skillmatch.modules.candidates.models import CandidateProject, CandidateProjectEvidence
 from skillmatch.modules.candidates.schemas import (
     CandidateProfileCreate,
     CandidateProfileRead,
@@ -34,7 +35,10 @@ from skillmatch.modules.candidates.schemas import (
     CandidateProjectRead,
     CandidateProjectUpdate,
     CandidateProjectWithProposalsRead,
+    EvidenceAuditRead,
     EvidenceProposalRead,
+    EvidenceRead,
+    EvidenceReviewRequest,
     PreferencesRead,
     PreferencesUpdate,
     SkillCreate,
@@ -55,6 +59,7 @@ _MAX_DB_INTEGER = 2_147_483_647
 SkillIdPath = Annotated[int, Path(ge=1, le=_MAX_DB_INTEGER, description="Id of a declared skill.")]
 """Path parameter of a skill; bounded so it always fits the database integer type."""
 ProjectIdPath = Annotated[int, Path(ge=1, le=_MAX_DB_INTEGER, description="Id of a project.")]
+EvidenceIdPath = Annotated[int, Path(ge=1, le=_MAX_DB_INTEGER, description="Id of an evidence.")]
 
 
 def get_candidate_service(session: SessionDep) -> CandidateService:
@@ -218,6 +223,27 @@ async def delete_skill(
 
 
 # ------------------------------------------------------------------------- projects (S-06)
+def _project_with_evidences(
+    project: CandidateProject, evidences: list[CandidateProjectEvidence]
+) -> CandidateProjectWithProposalsRead:
+    """Build project response with persisted evidences and backward-compatible proposals."""
+    proposals = [
+        EvidenceProposalRead(
+            canonical_id=e.canonical_id,
+            skill=e.skill_label,
+            matched_term=e.matched_term,
+            source=e.source,
+        )
+        for e in evidences
+        if e.status != "withdrawn"
+    ]
+    return CandidateProjectWithProposalsRead(
+        **CandidateProjectRead.from_project(project).model_dump(),
+        evidence_proposals=proposals,
+        evidences=[EvidenceRead.from_evidence(e) for e in evidences],
+    )
+
+
 @router.get(
     "/me/projects",
     summary="List my manual projects",
@@ -241,11 +267,8 @@ async def create_project(
     body: CandidateProjectCreate, current_user: TalentDep, service: CandidateServiceDep
 ) -> CandidateProjectWithProposalsRead:
     """Create a manual project and return evidence proposals from text."""
-    project, proposals = await service.create_project(current_user.id, body)
-    return CandidateProjectWithProposalsRead(
-        **CandidateProjectRead.from_project(project).model_dump(),
-        evidence_proposals=[EvidenceProposalRead(**p) for p in proposals],
-    )
+    project, evidences = await service.create_project(current_user.id, body)
+    return _project_with_evidences(project, list(evidences))
 
 
 @router.get(
@@ -259,11 +282,8 @@ async def read_project(
     """Return one owned project with evidence proposals."""
     owner_id = await service.get_project_owner_id(project_id)
     verify_resource_ownership(owner_id, current_user, hide_if_unauthorized=True)
-    project, proposals = await service.get_project(project_id, current_user.id)
-    return CandidateProjectWithProposalsRead(
-        **CandidateProjectRead.from_project(project).model_dump(),
-        evidence_proposals=[EvidenceProposalRead(**p) for p in proposals],
-    )
+    project, evidences = await service.get_project(project_id, current_user.id)
+    return _project_with_evidences(project, list(evidences))
 
 
 @router.patch(
@@ -280,11 +300,8 @@ async def update_project(
     """Update an owned project and return refreshed evidence proposals."""
     owner_id = await service.get_project_owner_id(project_id)
     verify_resource_ownership(owner_id, current_user, hide_if_unauthorized=True)
-    project, proposals = await service.update_project(project_id, current_user.id, body)
-    return CandidateProjectWithProposalsRead(
-        **CandidateProjectRead.from_project(project).model_dump(),
-        evidence_proposals=[EvidenceProposalRead(**p) for p in proposals],
-    )
+    project, evidences = await service.update_project(project_id, current_user.id, body)
+    return _project_with_evidences(project, list(evidences))
 
 
 @router.delete(
@@ -300,3 +317,66 @@ async def delete_project(
     owner_id = await service.get_project_owner_id(project_id)
     verify_resource_ownership(owner_id, current_user, hide_if_unauthorized=True)
     await service.delete_project(project_id, current_user.id)
+
+
+# ------------------------------------------------------------------------- evidences (S-07)
+@router.get(
+    "/me/projects/{project_id}/evidences",
+    summary="List evidence signals for one of my projects",
+    responses=problem_responses(401, 403, 404),
+)
+async def list_evidences(
+    project_id: ProjectIdPath, current_user: TalentDep, service: CandidateServiceDep
+) -> list[EvidenceRead]:
+    """List reviewable evidence signals for an owned project."""
+    owner_id = await service.get_project_owner_id(project_id)
+    verify_resource_ownership(owner_id, current_user, hide_if_unauthorized=True)
+    evidences = await service.list_evidences(project_id, current_user.id)
+    return [EvidenceRead.from_evidence(e) for e in evidences]
+
+
+@router.patch(
+    "/me/projects/{project_id}/evidences/{evidence_id}",
+    summary="Review an evidence signal",
+    responses=problem_responses(401, 403, 404, 422),
+)
+async def review_evidence(
+    project_id: ProjectIdPath,
+    evidence_id: EvidenceIdPath,
+    body: EvidenceReviewRequest,
+    current_user: TalentDep,
+    service: CandidateServiceDep,
+) -> EvidenceRead:
+    """Confirm, correct, or withdraw an evidence signal and leave an audit trail."""
+    owner_id = await service.get_evidence_owner_id(evidence_id)
+    verify_resource_ownership(owner_id, current_user, hide_if_unauthorized=True)
+    evidence = await service.review_evidence(project_id, evidence_id, current_user.id, body)
+    return EvidenceRead.from_evidence(evidence)
+
+
+@router.get(
+    "/me/projects/{project_id}/evidences/{evidence_id}/audit",
+    summary="List audit trail for an evidence signal",
+    responses=problem_responses(401, 403, 404),
+)
+async def list_evidence_audit(
+    project_id: ProjectIdPath,
+    evidence_id: EvidenceIdPath,
+    current_user: TalentDep,
+    service: CandidateServiceDep,
+) -> list[EvidenceAuditRead]:
+    """Return the audit trail for an evidence signal."""
+    owner_id = await service.get_evidence_owner_id(evidence_id)
+    verify_resource_ownership(owner_id, current_user, hide_if_unauthorized=True)
+    audits = await service.list_evidence_audits(project_id, evidence_id, current_user.id)
+    return [
+        EvidenceAuditRead(
+            action=a.action,
+            from_status=a.from_status,  # type: ignore[arg-type]
+            to_status=a.to_status,  # type: ignore[arg-type]
+            before=a.before,
+            after=a.after,
+            created_at=a.created_at,
+        )
+        for a in audits
+    ]

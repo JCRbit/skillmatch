@@ -14,6 +14,8 @@ from skillmatch.core.database import DATABASE_URL, Base
 from skillmatch.modules.candidates.models import (  # noqa: F401
     CandidateProfile,
     CandidateProject,
+    CandidateProjectEvidence,
+    CandidateProjectEvidenceAudit,
     CandidateSkill,
 )
 from skillmatch.modules.identity.models import User  # noqa: F401

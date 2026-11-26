@@ -23,7 +23,10 @@ from skillmatch.modules.candidates.errors import (
 from skillmatch.modules.candidates.models import (
     CandidateProfile,
     CandidateProject,
+    CandidateProjectEvidence,
+    CandidateProjectEvidenceAudit,
     CandidateSkill,
+    EvidenceStatus,
 )
 from skillmatch.modules.candidates.repository import CandidateRepository
 from skillmatch.modules.candidates.schemas import (
@@ -31,6 +34,7 @@ from skillmatch.modules.candidates.schemas import (
     CandidateProfileUpdate,
     CandidateProjectCreate,
     CandidateProjectUpdate,
+    EvidenceReviewRequest,
     PreferencesUpdate,
     SkillCreate,
     SkillUpdate,
@@ -315,8 +319,8 @@ class CandidateService:
 
     async def create_project(
         self, user_id: int, data: CandidateProjectCreate
-    ) -> tuple[CandidateProject, list[dict[str, str]]]:
-        """Create a manual project and compute evidence proposals."""
+    ) -> tuple[CandidateProject, list[CandidateProjectEvidence]]:
+        """Create a manual project and persist evidence proposals."""
         profile = await self.get_profile(user_id)
         project = CandidateProject(
             candidate_id=profile.id,
@@ -329,9 +333,12 @@ class CandidateService:
             project_date=data.project_date,
         )
         self._repository.add(project)
+        await self._session.flush()
+        await self._sync_evidences(project)
         await self._session.commit()
         await self._session.refresh(project)
-        return project, self.propose_evidence(project)
+        evidences = await self._repository.list_evidences(project.id)
+        return project, list(evidences)
 
     async def get_project_owner_id(self, project_id: int) -> int:
         """Return owner user_id for ownership checks."""
@@ -342,24 +349,28 @@ class CandidateService:
 
     async def get_project(
         self, project_id: int, user_id: int
-    ) -> tuple[CandidateProject, list[dict[str, str]]]:
-        """Return an owned project and its proposals."""
+    ) -> tuple[CandidateProject, list[CandidateProjectEvidence]]:
+        """Return an owned project and its evidences."""
         project = await self._require_owned_project(project_id, user_id)
-        return project, self.propose_evidence(project)
+        evidences = await self._repository.list_evidences(project.id)
+        return project, list(evidences)
 
     async def update_project(
         self, project_id: int, user_id: int, data: CandidateProjectUpdate
-    ) -> tuple[CandidateProject, list[dict[str, str]]]:
-        """Update an owned project."""
+    ) -> tuple[CandidateProject, list[CandidateProjectEvidence]]:
+        """Update an owned project and sync new evidence proposals."""
         project = await self._require_owned_project(project_id, user_id)
         for field, value in data.model_dump(exclude_unset=True).items():
             if field == "source_type" and value is not None:
                 setattr(project, field, value.value)
             else:
                 setattr(project, field, value)
+        await self._session.flush()
+        await self._sync_evidences(project)
         await self._session.commit()
         await self._session.refresh(project)
-        return project, self.propose_evidence(project)
+        evidences = await self._repository.list_evidences(project.id)
+        return project, list(evidences)
 
     async def delete_project(self, project_id: int, user_id: int) -> None:
         """Delete an owned project."""
@@ -372,6 +383,114 @@ class CandidateService:
         if project is None:
             raise NotFoundError(_PROJECT_NOT_FOUND)
         return project
+
+    # ------------------------------------------------------------------ evidences (S-07)
+    async def list_evidences(self, project_id: int, user_id: int) -> list[CandidateProjectEvidence]:
+        """Return evidences for an owned project."""
+        await self._require_owned_project(project_id, user_id)
+        return list(await self._repository.list_evidences(project_id))
+
+    async def get_evidence_owner_id(self, evidence_id: int) -> int:
+        """Return owner user_id for an evidence."""
+        owner_id = await self._repository.get_evidence_owner_id(evidence_id)
+        if owner_id is None:
+            raise NotFoundError(_PROJECT_NOT_FOUND)
+        return owner_id
+
+    async def review_evidence(
+        self,
+        project_id: int,
+        evidence_id: int,
+        user_id: int,
+        data: EvidenceReviewRequest,
+    ) -> CandidateProjectEvidence:
+        """Apply a review action to an evidence and record an audit trail."""
+        await self._require_owned_project(project_id, user_id)
+        evidence = await self._repository.get_owned_evidence(evidence_id, user_id)
+        if evidence is None or evidence.project_id != project_id:
+            raise NotFoundError(_PROJECT_NOT_FOUND)
+
+        before = self._evidence_snapshot(evidence)
+        from_status = EvidenceStatus(evidence.status)
+
+        if data.action == "confirm":
+            evidence.status = EvidenceStatus.CONFIRMED.value
+        elif data.action == "withdraw":
+            evidence.status = EvidenceStatus.WITHDRAWN.value
+        elif data.action == "correct":
+            if data.canonical_id is not None:
+                evidence.canonical_id = data.canonical_id
+            if data.skill_label is not None:
+                evidence.skill_label = data.skill_label
+            if data.matched_term is not None:
+                evidence.matched_term = data.matched_term
+            evidence.status = EvidenceStatus.CORRECTED.value
+        if data.note is not None:
+            evidence.note = data.note
+
+        to_status = EvidenceStatus(evidence.status)
+        after = self._evidence_snapshot(evidence)
+        self._repository.add_audit(
+            CandidateProjectEvidenceAudit(
+                evidence_id=evidence.id,
+                project_id=project_id,
+                actor_user_id=user_id,
+                action=data.action,
+                from_status=from_status.value,
+                to_status=to_status.value,
+                before=before,
+                after=after,
+            )
+        )
+        await self._session.commit()
+        await self._session.refresh(evidence)
+        return evidence
+
+    async def list_evidence_audits(
+        self, project_id: int, evidence_id: int, user_id: int
+    ) -> list[CandidateProjectEvidenceAudit]:
+        """Return audit trail for an owned evidence."""
+        await self._require_owned_project(project_id, user_id)
+        evidence = await self._repository.get_owned_evidence(evidence_id, user_id)
+        if evidence is None or evidence.project_id != project_id:
+            raise NotFoundError(_PROJECT_NOT_FOUND)
+        return list(await self._repository.list_evidence_audits(evidence_id))
+
+    @staticmethod
+    def _evidence_snapshot(evidence: CandidateProjectEvidence) -> dict[str, str | None]:
+        return {
+            "canonical_id": evidence.canonical_id,
+            "skill_label": evidence.skill_label,
+            "matched_term": evidence.matched_term,
+            "source": evidence.source,
+            "status": evidence.status,
+            "note": evidence.note,
+        }
+
+    async def _sync_evidences(self, project: CandidateProject) -> None:
+        """Persist newly detected proposals without overwriting reviewed signals."""
+        proposals = self.propose_evidence(project)
+        existing = {e.canonical_id: e for e in await self._repository.list_evidences(project.id)}
+        for proposal in proposals:
+            canonical_id = proposal["canonical_id"]
+            if canonical_id in existing:
+                evidence = existing[canonical_id]
+                if evidence.status == EvidenceStatus.PROPOSED.value:
+                    evidence.skill_label = proposal["skill"]
+                    evidence.matched_term = proposal["matched_term"]
+                    evidence.source = proposal["source"]
+                continue
+            self._repository.add(
+                CandidateProjectEvidence(
+                    project_id=project.id,
+                    candidate_id=project.candidate_id,
+                    canonical_id=canonical_id,
+                    skill_label=proposal["skill"],
+                    matched_term=proposal["matched_term"],
+                    source=proposal["source"],
+                    status=EvidenceStatus.PROPOSED.value,
+                )
+            )
 
     def propose_evidence(self, project: CandidateProject) -> list[dict[str, str]]:
         """Propose canonical skills from project text using taxonomy aliases.
@@ -402,10 +521,7 @@ class CandidateService:
             ("role", project.role),
             ("description", project.description),
         ]
-        # Build candidate aliases, skipping very short ambiguous ones
-        safe_aliases: list[
-            tuple[str, str, str]
-        ] = []  # (normalized_alias, canonical_id, original_alias)
+        safe_aliases: list[tuple[str, str, str]] = []
         seen: set[tuple[str, str]] = set()
         for skill in taxonomy:
             for alias in (skill.skill, *skill.aliases):
@@ -417,7 +533,6 @@ class CandidateService:
                     continue
                 seen.add(key)
                 safe_aliases.append((norm, skill.canonical_id, alias))
-        # Match longer aliases first to prefer specific matches
         safe_aliases.sort(key=lambda x: len(x[0]), reverse=True)
 
         for source_name, text in text_sources:

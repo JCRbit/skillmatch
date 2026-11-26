@@ -8,7 +8,7 @@ matters because these bodies carry personal data.
 
 import re
 from datetime import UTC, date, datetime
-from typing import Annotated, Any, Final, Self
+from typing import Annotated, Any, Final, Literal, Self
 
 from pydantic import (
     AfterValidator,
@@ -24,8 +24,10 @@ from pydantic import (
 from skillmatch.modules.candidates.models import (
     CandidateProfile,
     CandidateProject,
+    CandidateProjectEvidence,
     CandidateSkill,
     ContractType,
+    EvidenceStatus,
     ProjectSourceType,
     SkillLevel,
     WorkMode,
@@ -328,6 +330,98 @@ class EvidenceProposalRead(BaseModel):
     )
 
 
+class EvidenceAuditRead(BaseModel):
+    """Audit record for an evidence review action."""
+
+    action: str
+    from_status: EvidenceStatus
+    to_status: EvidenceStatus
+    before: dict[str, Any]
+    after: dict[str, Any]
+    created_at: UtcDatetime
+
+
+class EvidenceRead(BaseModel):
+    """A reviewable evidence signal for a project."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    canonical_id: str
+    skill_label: str
+    matched_term: str
+    source: str
+    status: EvidenceStatus
+    note: str | None
+    created_at: UtcDatetime
+    updated_at: UtcDatetime
+
+    @classmethod
+    def from_evidence(cls, evidence: CandidateProjectEvidence) -> Self:
+        """Build representation from stored evidence."""
+        return cls.model_validate(evidence)
+
+
+class EvidenceReviewRequest(_Request):
+    """Body of ``PATCH /candidates/me/projects/{project_id}/evidences/{evidence_id}``."""
+
+    action: Literal["confirm", "correct", "withdraw"] = Field(
+        description="Review action: confirm, correct, or withdraw the evidence."
+    )
+    canonical_id: (
+        Annotated[
+            str,
+            BeforeValidator(_collapse_spaces),
+            StringConstraints(min_length=1, max_length=120),
+        ]
+        | None
+    ) = None
+    skill_label: (
+        Annotated[
+            str,
+            BeforeValidator(_collapse_spaces),
+            StringConstraints(min_length=1, max_length=120),
+        ]
+        | None
+    ) = None
+    matched_term: (
+        Annotated[
+            str,
+            BeforeValidator(_collapse_spaces),
+            StringConstraints(min_length=1, max_length=120),
+        ]
+        | None
+    ) = None
+    note: (
+        Annotated[
+            str,
+            BeforeValidator(_strip),
+            StringConstraints(min_length=1, max_length=500),
+        ]
+        | None
+    ) = None
+
+    @model_validator(mode="after")
+    def _validate_action(self) -> Self:
+        if self.action == "correct":
+            if not any(
+                value is not None
+                for value in (self.canonical_id, self.skill_label, self.matched_term, self.note)
+            ):
+                msg = "correct action requires at least one correction field"
+                raise ValueError(msg)
+        else:
+            disallowed = {
+                name
+                for name in ("canonical_id", "skill_label", "matched_term")
+                if getattr(self, name) is not None
+            }
+            if disallowed:
+                msg = f"{', '.join(sorted(disallowed))} only allowed for correct action"
+                raise ValueError(msg)
+        return self
+
+
 class CandidateProjectCreate(_Request):
     """Body of ``POST /candidates/me/projects``."""
 
@@ -466,3 +560,4 @@ class CandidateProjectWithProposalsRead(CandidateProjectRead):
     """Project with evidence proposals derived from text."""
 
     evidence_proposals: list[EvidenceProposalRead] = Field(default_factory=list)
+    evidences: list[EvidenceRead] = Field(default_factory=list)
