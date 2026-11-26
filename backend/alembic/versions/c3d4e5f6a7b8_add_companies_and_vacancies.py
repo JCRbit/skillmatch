@@ -1,7 +1,7 @@
 """add companies and vacancies.
 
 Revision ID: c3d4e5f6a7b8
-Revises: 5d1e7a3c9b24
+Revises: 174019ed5756
 Create Date: 2026-11-26 14:00:00.000000
 """
 
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision: str = "c3d4e5f6a7b8"
-down_revision: str | Sequence[str] | None = "5d1e7a3c9b24"
+down_revision: str | Sequence[str] | None = "174019ed5756"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
