@@ -221,6 +221,736 @@
           }
         ]
       }
+    },
+    "/api/v1/candidates/me": {
+      "get": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "Read my candidate profile",
+        "description": "Return the caller's own profile, preferences and visibility flags.",
+        "operationId": "read_profile_api_v1_candidates_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandidateProfileRead"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller is authenticated but not allowed to do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such resource, or not visible to the caller.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "Create my candidate profile",
+        "description": "Create the caller's profile.\n\nA new profile is private (not discoverable, location hidden) and has no preferences. A\ncandidate has at most one profile.",
+        "operationId": "create_profile_api_v1_candidates_me_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CandidateProfileCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandidateProfileRead"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller is authenticated but not allowed to do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The request conflicts with the current state of the resource.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request body or parameters are invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "Delete my candidate profile",
+        "description": "Delete the profile with its skills, preferences and visibility flags.\n\nThe account is not deleted and the candidate can create a new profile afterwards.",
+        "operationId": "delete_profile_api_v1_candidates_me_delete",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Missing, invalid or expired credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller is authenticated but not allowed to do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such resource, or not visible to the caller.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "Update my candidate profile",
+        "description": "Change only the profile fields present in the body.",
+        "operationId": "update_profile_api_v1_candidates_me_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CandidateProfileUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandidateProfileRead"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller is authenticated but not allowed to do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such resource, or not visible to the caller.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request body or parameters are invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/candidates/me/preferences": {
+      "put": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "Replace my preferences",
+        "description": "Replace work modes, contract types, preferred locations and interests.",
+        "operationId": "replace_preferences_api_v1_candidates_me_preferences_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreferencesUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreferencesRead"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller is authenticated but not allowed to do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such resource, or not visible to the caller.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request body or parameters are invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/candidates/me/visibility": {
+      "put": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "Set my visibility flags",
+        "description": "Set whether the profile is discoverable and whether the city may be shown.",
+        "operationId": "replace_visibility_api_v1_candidates_me_visibility_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VisibilityUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VisibilityRead"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller is authenticated but not allowed to do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such resource, or not visible to the caller.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request body or parameters are invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/candidates/me/skills": {
+      "get": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "List my declared skills",
+        "description": "Return the caller's declared skills ordered by name.",
+        "operationId": "list_skills_api_v1_candidates_me_skills_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SkillRead"
+                  },
+                  "type": "array",
+                  "title": "Response List Skills Api V1 Candidates Me Skills Get"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller is authenticated but not allowed to do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such resource, or not visible to the caller.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "Declare a skill",
+        "description": "Declare a skill. Names are unique per candidate, ignoring capitalisation.",
+        "operationId": "add_skill_api_v1_candidates_me_skills_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SkillCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SkillRead"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller is authenticated but not allowed to do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such resource, or not visible to the caller.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The request conflicts with the current state of the resource.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request body or parameters are invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/candidates/me/skills/{skill_id}": {
+      "patch": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "Update a declared skill",
+        "description": "Change the name and/or level of one of the caller's skills.\n\nA skill that does not exist and a skill of another candidate both answer ``404``.",
+        "operationId": "update_skill_api_v1_candidates_me_skills__skill_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "skill_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "description": "Id of a declared skill.",
+              "title": "Skill Id"
+            },
+            "description": "Id of a declared skill."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SkillUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SkillRead"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller is authenticated but not allowed to do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such resource, or not visible to the caller.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The request conflicts with the current state of the resource.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request body or parameters are invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "Remove a declared skill",
+        "description": "Remove one of the caller's skills.\n\nA skill that does not exist and a skill of another candidate both answer ``404``.",
+        "operationId": "delete_skill_api_v1_candidates_me_skills__skill_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "skill_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "description": "Id of a declared skill.",
+              "title": "Skill Id"
+            },
+            "description": "Id of a declared skill."
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Missing, invalid or expired credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller is authenticated but not allowed to do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such resource, or not visible to the caller.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -247,6 +977,211 @@
         ],
         "title": "AuthenticatedUser",
         "description": "Identity returned together with a token, as read from the database."
+      },
+      "CandidateProfileCreate": {
+        "properties": {
+          "display_name": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Display Name",
+            "description": "Pseudonym shown instead of a real name."
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "languages": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 10,
+            "title": "Languages",
+            "description": "Lower-case ISO 639 codes, e.g. `es`, `en`."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "display_name"
+        ],
+        "title": "CandidateProfileCreate",
+        "description": "Body of ``POST /candidates/me``.\n\nPreferences and visibility are not part of creation: a new profile starts private and with\nempty preferences, and the candidate opts in through their own endpoints."
+      },
+      "CandidateProfileRead": {
+        "properties": {
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "languages": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Languages"
+          },
+          "preferences": {
+            "$ref": "#/components/schemas/PreferencesRead"
+          },
+          "visibility": {
+            "$ref": "#/components/schemas/VisibilityRead"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "display_name",
+          "summary",
+          "city",
+          "languages",
+          "preferences",
+          "visibility",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "CandidateProfileRead",
+        "description": "The candidate's own profile. It never includes identity data (email, role, ids)."
+      },
+      "CandidateProfileUpdate": {
+        "properties": {
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "languages": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "maxItems": 10
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Languages"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "CandidateProfileUpdate",
+        "description": "Body of ``PATCH /candidates/me``: only the fields sent are changed.\n\n``summary`` and ``city`` accept ``null`` to clear them; ``display_name`` and ``languages``\ncannot be null (send ``[]`` to clear the languages)."
+      },
+      "ContractType": {
+        "type": "string",
+        "enum": [
+          "full_time",
+          "part_time",
+          "internship",
+          "freelance"
+        ],
+        "title": "ContractType",
+        "description": "Kinds of engagement the candidate is open to."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
       },
       "HealthResponse": {
         "properties": {
@@ -284,6 +1219,97 @@
         ],
         "title": "LoginRequest",
         "description": "Body of ``POST /auth/login``.\n\nThere is deliberately no ``role`` field: the role always comes from the stored account."
+      },
+      "PreferencesRead": {
+        "properties": {
+          "work_modes": {
+            "items": {
+              "$ref": "#/components/schemas/WorkMode"
+            },
+            "type": "array",
+            "title": "Work Modes"
+          },
+          "contract_types": {
+            "items": {
+              "$ref": "#/components/schemas/ContractType"
+            },
+            "type": "array",
+            "title": "Contract Types"
+          },
+          "preferred_locations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Preferred Locations"
+          },
+          "interests": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Interests"
+          }
+        },
+        "type": "object",
+        "required": [
+          "work_modes",
+          "contract_types",
+          "preferred_locations",
+          "interests"
+        ],
+        "title": "PreferencesRead",
+        "description": "The candidate's preferences."
+      },
+      "PreferencesUpdate": {
+        "properties": {
+          "work_modes": {
+            "items": {
+              "$ref": "#/components/schemas/WorkMode"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "title": "Work Modes"
+          },
+          "contract_types": {
+            "items": {
+              "$ref": "#/components/schemas/ContractType"
+            },
+            "type": "array",
+            "maxItems": 4,
+            "title": "Contract Types"
+          },
+          "preferred_locations": {
+            "items": {
+              "type": "string",
+              "maxLength": 100,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 10,
+            "title": "Preferred Locations"
+          },
+          "interests": {
+            "items": {
+              "type": "string",
+              "maxLength": 60,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Interests"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "work_modes",
+          "contract_types",
+          "preferred_locations",
+          "interests"
+        ],
+        "title": "PreferencesUpdate",
+        "description": "Body of ``PUT /candidates/me/preferences``: replaces every preference.\n\nEvery field is required (an empty list means \"no preference\") so a client can never wipe\nthe preferences by omitting a field."
       },
       "ProblemResponse": {
         "properties": {
@@ -424,6 +1450,105 @@
         "title": "RegisterRequest",
         "description": "Body of ``POST /auth/register``."
       },
+      "SkillCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Name",
+            "description": "Skill as the candidate names it, e.g. `Python`."
+          },
+          "level": {
+            "$ref": "#/components/schemas/SkillLevel",
+            "description": "Self-declared proficiency."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "level"
+        ],
+        "title": "SkillCreate",
+        "description": "Body of ``POST /candidates/me/skills``."
+      },
+      "SkillLevel": {
+        "type": "string",
+        "enum": [
+          "beginner",
+          "intermediate",
+          "advanced"
+        ],
+        "title": "SkillLevel",
+        "description": "Self-declared proficiency. It is a declaration, not an evaluated level."
+      },
+      "SkillRead": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "level": {
+            "$ref": "#/components/schemas/SkillLevel"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "level",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "SkillRead",
+        "description": "A skill declared by the candidate."
+      },
+      "SkillUpdate": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 60,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SkillLevel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "SkillUpdate",
+        "description": "Body of ``PATCH /candidates/me/skills/{skill_id}``: only the fields sent are changed."
+      },
       "TokenResponse": {
         "properties": {
           "access_token": {
@@ -498,6 +1623,46 @@
         "title": "UserRole",
         "description": "Possible roles a user can have in the platform."
       },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
       "VersionResponse": {
         "properties": {
           "name": {
@@ -526,6 +1691,57 @@
         ],
         "title": "VersionResponse",
         "description": "Code that is running, for traceability."
+      },
+      "VisibilityRead": {
+        "properties": {
+          "discoverable": {
+            "type": "boolean",
+            "title": "Discoverable"
+          },
+          "show_location": {
+            "type": "boolean",
+            "title": "Show Location"
+          }
+        },
+        "type": "object",
+        "required": [
+          "discoverable",
+          "show_location"
+        ],
+        "title": "VisibilityRead",
+        "description": "The candidate's visibility flags."
+      },
+      "VisibilityUpdate": {
+        "properties": {
+          "discoverable": {
+            "type": "boolean",
+            "title": "Discoverable",
+            "description": "Whether companies may find a pseudonymised version of this profile."
+          },
+          "show_location": {
+            "type": "boolean",
+            "title": "Show Location",
+            "description": "Whether the city may be part of the pseudonymised version."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "discoverable",
+          "show_location"
+        ],
+        "title": "VisibilityUpdate",
+        "description": "Body of ``PUT /candidates/me/visibility``: both flags are explicit, never defaulted."
+      },
+      "WorkMode": {
+        "type": "string",
+        "enum": [
+          "remote",
+          "hybrid",
+          "onsite"
+        ],
+        "title": "WorkMode",
+        "description": "How the candidate prefers to work."
       }
     },
     "securitySchemes": {
