@@ -1,0 +1,65 @@
+{
+  "report_id": "qr-synthetic-v1",
+  "dataset_version": "v1",
+  "generated_at": "2026-11-26T00:00:00Z",
+  "reference_date": "2026-11-26",
+  "method": "DAMA-inspired basic checks (synthetic seed v1)",
+  "dimensions": {
+    "completeness": {
+      "score": 100.0,
+      "weight": 0.4,
+      "details": [
+        {
+          "entity": "candidates",
+          "score": 100.0,
+          "missing_fields": 0,
+          "total_fields": 225
+        },
+        {
+          "entity": "vacancies",
+          "score": 100.0,
+          "missing_fields": 0,
+          "total_fields": 144
+        },
+        {
+          "entity": "companies",
+          "score": 100.0,
+          "missing_fields": 0,
+          "total_fields": 33
+        },
+        {
+          "entity": "projects",
+          "score": 100.0,
+          "missing_fields": 0,
+          "total_fields": 160
+        }
+      ]
+    },
+    "uniqueness": {
+      "score": 100.0,
+      "weight": 0.35,
+      "details": {
+        "duplicate_ids": 0,
+        "duplicate_emails": 0,
+        "total_ids": 42,
+        "total_emails": 15
+      }
+    },
+    "timeliness": {
+      "score": 100.0,
+      "weight": 0.25,
+      "details": {
+        "stale_or_out_of_window_dates": 0,
+        "total_date_fields_checked": 84,
+        "window_days": 365
+      }
+    }
+  },
+  "total_score_0_100": 100.0,
+  "status": "pass",
+  "notes": [
+    "Synthetic dataset; no real personal data used.",
+    "Completeness checks required non-empty fields by entity schema subset.",
+    "Timeliness checks date fields are within +/-365 days of reference date for seed freshness."
+  ]
+}
