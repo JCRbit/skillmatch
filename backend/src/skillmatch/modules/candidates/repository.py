@@ -11,7 +11,11 @@ from collections.abc import Sequence
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from skillmatch.modules.candidates.models import CandidateProfile, CandidateSkill
+from skillmatch.modules.candidates.models import (
+    CandidateConsent,
+    CandidateProfile,
+    CandidateSkill,
+)
 
 
 class CandidateRepository:
@@ -109,3 +113,26 @@ class CandidateRepository:
     async def delete_skill(self, skill: CandidateSkill) -> None:
         """Stage the deletion of one skill."""
         await self._session.delete(skill)
+
+    async def list_consents(self, profile_id: int) -> Sequence[CandidateConsent]:
+        """Return the stored consent rows of a profile, ordered by purpose."""
+        result = await self._session.execute(
+            select(CandidateConsent)
+            .where(CandidateConsent.candidate_id == profile_id)
+            .order_by(CandidateConsent.purpose)
+        )
+        return result.scalars().all()
+
+    async def get_consent(self, profile_id: int, purpose: str) -> CandidateConsent | None:
+        """Return the stored decision for one purpose, if the candidate ever made one."""
+        result = await self._session.execute(
+            select(CandidateConsent).where(
+                CandidateConsent.candidate_id == profile_id,
+                CandidateConsent.purpose == purpose,
+            )
+        )
+        return result.scalar_one_or_none()
+
+    def add_consent(self, consent: CandidateConsent) -> None:
+        """Stage a new consent row for insertion."""
+        self._session.add(consent)

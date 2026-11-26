@@ -7,6 +7,7 @@ with the dependencies of :mod:`skillmatch.api.deps`; the scoping here is a secon
 """
 
 from collections.abc import Sequence
+from datetime import UTC, datetime
 from typing import Final
 
 from sqlalchemy.exc import IntegrityError
@@ -19,11 +20,17 @@ from skillmatch.modules.candidates.errors import (
     SkillAlreadyDeclaredError,
     SkillLimitReachedError,
 )
-from skillmatch.modules.candidates.models import CandidateProfile, CandidateSkill
+from skillmatch.modules.candidates.models import (
+    CandidateConsent,
+    CandidateProfile,
+    CandidateSkill,
+    ConsentPurpose,
+)
 from skillmatch.modules.candidates.repository import CandidateRepository
 from skillmatch.modules.candidates.schemas import (
     CandidateProfileCreate,
     CandidateProfileUpdate,
+    ConsentUpdate,
     PreferencesUpdate,
     SkillCreate,
     SkillUpdate,
@@ -32,6 +39,9 @@ from skillmatch.modules.candidates.schemas import (
 
 MAX_SKILLS_PER_CANDIDATE: Final = 50
 """Upper bound of declared skills per candidate; keeps a profile (and its payloads) bounded."""
+
+DEFAULT_POLICY_VERSION: Final = "2026-11"
+"""Version of the privacy text recorded when a client does not send its own."""
 
 _SKILL_NOT_FOUND: Final = "Recurso no encontrado."
 """Same wording as ``verify_resource_ownership`` so a missing skill and someone else's skill
@@ -296,3 +306,51 @@ class CandidateService:
             if _is_skill_name_unique_violation(exc):
                 raise SkillAlreadyDeclaredError from exc
             raise
+
+    # ------------------------------------------------------------------ consent
+    async def list_consents(self, user_id: int) -> Sequence[CandidateConsent]:
+        """Return the consent state of every purpose of the caller's profile.
+
+        Raises:
+            CandidateProfileNotFoundError: The caller has no profile yet.
+        """
+        profile = await self.get_profile(user_id)
+        return await self._repository.list_consents(profile.id)
+
+    async def set_consent(
+        self, user_id: int, purpose: ConsentPurpose, data: ConsentUpdate
+    ) -> CandidateConsent:
+        """Grant or withdraw consent for one purpose of the caller's profile.
+
+        The decision is idempotent: repeating it keeps one row and does not move the date of
+        the last real change. Withdrawing ``discovery`` also turns the ``discoverable`` flag
+        off in the same transaction, so the profile stops being reachable immediately and the
+        two never disagree (US-08: withdrawal must be effective, FR-019).
+
+        Raises:
+            CandidateProfileNotFoundError: The caller has no profile yet.
+        """
+        profile = await self.get_profile(user_id)
+        now = datetime.now(UTC)
+        policy_version = data.policy_version or DEFAULT_POLICY_VERSION
+        consent = await self._repository.get_consent(profile.id, purpose.value)
+        if consent is None:
+            consent = CandidateConsent(
+                candidate_id=profile.id,
+                purpose=purpose.value,
+                granted=False,
+                policy_version=policy_version,
+            )
+            self._repository.add_consent(consent)
+        if consent.granted != data.granted:
+            consent.granted = data.granted
+            consent.policy_version = policy_version
+            if data.granted:
+                consent.granted_at = now
+            else:
+                consent.revoked_at = now
+        if purpose is ConsentPurpose.DISCOVERY:
+            profile.discoverable = data.granted
+        await self._session.commit()
+        await self._session.refresh(consent)
+        return consent
