@@ -9,13 +9,14 @@ Privacy by default: a new profile is not discoverable and does not reveal its lo
 consent and the blind-review projection are built on top of these flags by tasks B-05 and B-06.
 """
 
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from enum import StrEnum
 
 from sqlalchemy import (
     JSON,
     Boolean,
     CheckConstraint,
+    Date,
     DateTime,
     ForeignKey,
     String,
@@ -129,6 +130,42 @@ class CandidateSkill(Base):
     name: Mapped[str] = mapped_column(String(60), nullable=False)
     name_key: Mapped[str] = mapped_column(String(60), nullable=False)
     level: Mapped[str] = mapped_column(String(20), nullable=False)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_utc_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_utc_now, onupdate=_utc_now
+    )
+
+
+class ProjectSourceType(StrEnum):
+    """Origin of a manually entered project."""
+
+    MANUAL = "manual"
+    GITHUB = "github"
+    PORTFOLIO = "portfolio"
+    OTHER = "other"
+
+
+class CandidateProject(Base):
+    """A project manually entered by a candidate as evidence of experience."""
+
+    __tablename__ = "candidate_projects"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    candidate_id: Mapped[int] = mapped_column(
+        ForeignKey("candidate_profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    name: Mapped[str] = mapped_column(String(120), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    role: Mapped[str] = mapped_column(String(120), nullable=False)
+    stack: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    source_type: Mapped[str] = mapped_column(
+        String(20), nullable=False, default=ProjectSourceType.MANUAL.value
+    )
+    source_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    project_date: Mapped[date] = mapped_column(Date, nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_utc_now

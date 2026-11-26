@@ -30,6 +30,11 @@ from skillmatch.modules.candidates.schemas import (
     CandidateProfileCreate,
     CandidateProfileRead,
     CandidateProfileUpdate,
+    CandidateProjectCreate,
+    CandidateProjectRead,
+    CandidateProjectUpdate,
+    CandidateProjectWithProposalsRead,
+    EvidenceProposalRead,
     PreferencesRead,
     PreferencesUpdate,
     SkillCreate,
@@ -49,6 +54,7 @@ TalentDep = Annotated[User, Depends(require_roles(UserRole.TALENTO))]
 _MAX_DB_INTEGER = 2_147_483_647
 SkillIdPath = Annotated[int, Path(ge=1, le=_MAX_DB_INTEGER, description="Id of a declared skill.")]
 """Path parameter of a skill; bounded so it always fits the database integer type."""
+ProjectIdPath = Annotated[int, Path(ge=1, le=_MAX_DB_INTEGER, description="Id of a project.")]
 
 
 def get_candidate_service(session: SessionDep) -> CandidateService:
@@ -209,3 +215,88 @@ async def delete_skill(
     owner_id = await service.get_skill_owner_id(skill_id)
     verify_resource_ownership(owner_id, current_user, hide_if_unauthorized=True)
     await service.delete_skill(skill_id, current_user.id)
+
+
+# ------------------------------------------------------------------------- projects (S-06)
+@router.get(
+    "/me/projects",
+    summary="List my manual projects",
+    responses=problem_responses(401, 403, 404),
+)
+async def list_projects(
+    current_user: TalentDep, service: CandidateServiceDep
+) -> list[CandidateProjectRead]:
+    """Return the caller's manually entered projects."""
+    projects = await service.list_projects(current_user.id)
+    return [CandidateProjectRead.from_project(p) for p in projects]
+
+
+@router.post(
+    "/me/projects",
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a manual project",
+    responses=problem_responses(401, 403, 404, 422),
+)
+async def create_project(
+    body: CandidateProjectCreate, current_user: TalentDep, service: CandidateServiceDep
+) -> CandidateProjectWithProposalsRead:
+    """Create a manual project and return evidence proposals from text."""
+    project, proposals = await service.create_project(current_user.id, body)
+    return CandidateProjectWithProposalsRead(
+        **CandidateProjectRead.from_project(project).model_dump(),
+        evidence_proposals=[EvidenceProposalRead(**p) for p in proposals],
+    )
+
+
+@router.get(
+    "/me/projects/{project_id}",
+    summary="Read one of my projects",
+    responses=problem_responses(401, 403, 404),
+)
+async def read_project(
+    project_id: ProjectIdPath, current_user: TalentDep, service: CandidateServiceDep
+) -> CandidateProjectWithProposalsRead:
+    """Return one owned project with evidence proposals."""
+    owner_id = await service.get_project_owner_id(project_id)
+    verify_resource_ownership(owner_id, current_user, hide_if_unauthorized=True)
+    project, proposals = await service.get_project(project_id, current_user.id)
+    return CandidateProjectWithProposalsRead(
+        **CandidateProjectRead.from_project(project).model_dump(),
+        evidence_proposals=[EvidenceProposalRead(**p) for p in proposals],
+    )
+
+
+@router.patch(
+    "/me/projects/{project_id}",
+    summary="Update one of my projects",
+    responses=problem_responses(401, 403, 404, 422),
+)
+async def update_project(
+    project_id: ProjectIdPath,
+    body: CandidateProjectUpdate,
+    current_user: TalentDep,
+    service: CandidateServiceDep,
+) -> CandidateProjectWithProposalsRead:
+    """Update an owned project and return refreshed evidence proposals."""
+    owner_id = await service.get_project_owner_id(project_id)
+    verify_resource_ownership(owner_id, current_user, hide_if_unauthorized=True)
+    project, proposals = await service.update_project(project_id, current_user.id, body)
+    return CandidateProjectWithProposalsRead(
+        **CandidateProjectRead.from_project(project).model_dump(),
+        evidence_proposals=[EvidenceProposalRead(**p) for p in proposals],
+    )
+
+
+@router.delete(
+    "/me/projects/{project_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete one of my projects",
+    responses=problem_responses(401, 403, 404),
+)
+async def delete_project(
+    project_id: ProjectIdPath, current_user: TalentDep, service: CandidateServiceDep
+) -> None:
+    """Delete an owned project."""
+    owner_id = await service.get_project_owner_id(project_id)
+    verify_resource_ownership(owner_id, current_user, hide_if_unauthorized=True)
+    await service.delete_project(project_id, current_user.id)

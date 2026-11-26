@@ -11,7 +11,7 @@ from collections.abc import Sequence
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from skillmatch.modules.candidates.models import CandidateProfile, CandidateSkill
+from skillmatch.modules.candidates.models import CandidateProfile, CandidateProject, CandidateSkill
 
 
 class CandidateRepository:
@@ -35,8 +35,8 @@ class CandidateRepository:
         )
         return result.scalar_one_or_none()
 
-    def add(self, entity: CandidateProfile | CandidateSkill) -> None:
-        """Stage a new profile or skill for insertion."""
+    def add(self, entity: CandidateProfile | CandidateSkill | CandidateProject) -> None:
+        """Stage a new profile, skill, or project for insertion."""
         self._session.add(entity)
 
     async def delete_profile(self, profile: CandidateProfile) -> None:
@@ -109,3 +109,35 @@ class CandidateRepository:
     async def delete_skill(self, skill: CandidateSkill) -> None:
         """Stage the deletion of one skill."""
         await self._session.delete(skill)
+
+    # --------------------------------------------------------------------- projects (S-06)
+    async def list_projects(self, profile_id: int) -> Sequence[CandidateProject]:
+        """Return projects of a profile ordered by newest project date, then id."""
+        result = await self._session.execute(
+            select(CandidateProject)
+            .where(CandidateProject.candidate_id == profile_id)
+            .order_by(CandidateProject.project_date.desc(), CandidateProject.id.desc())
+        )
+        return result.scalars().all()
+
+    async def get_project_owner_id(self, project_id: int) -> int | None:
+        """Return the user_id that owns a project."""
+        result = await self._session.execute(
+            select(CandidateProfile.user_id)
+            .join(CandidateProject, CandidateProject.candidate_id == CandidateProfile.id)
+            .where(CandidateProject.id == project_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def get_owned_project(self, project_id: int, user_id: int) -> CandidateProject | None:
+        """Return a project only if it belongs to this user's profile."""
+        result = await self._session.execute(
+            select(CandidateProject)
+            .join(CandidateProfile, CandidateProject.candidate_id == CandidateProfile.id)
+            .where(CandidateProject.id == project_id, CandidateProfile.user_id == user_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def delete_project(self, project: CandidateProject) -> None:
+        """Stage deletion of a project."""
+        await self._session.delete(project)

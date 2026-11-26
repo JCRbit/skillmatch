@@ -951,6 +951,387 @@
           }
         }
       }
+    },
+    "/api/v1/candidates/me/projects": {
+      "get": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "List my manual projects",
+        "description": "Return the caller's manually entered projects.",
+        "operationId": "list_projects_api_v1_candidates_me_projects_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CandidateProjectRead"
+                  },
+                  "type": "array",
+                  "title": "Response List Projects Api V1 Candidates Me Projects Get"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller is authenticated but not allowed to do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such resource, or not visible to the caller.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "Create a manual project",
+        "description": "Create a manual project and return evidence proposals from text.",
+        "operationId": "create_project_api_v1_candidates_me_projects_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CandidateProjectCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandidateProjectWithProposalsRead"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller is authenticated but not allowed to do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such resource, or not visible to the caller.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request body or parameters are invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/candidates/me/projects/{project_id}": {
+      "get": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "Read one of my projects",
+        "description": "Return one owned project with evidence proposals.",
+        "operationId": "read_project_api_v1_candidates_me_projects__project_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "description": "Id of a project.",
+              "title": "Project Id"
+            },
+            "description": "Id of a project."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandidateProjectWithProposalsRead"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller is authenticated but not allowed to do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such resource, or not visible to the caller.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "Update one of my projects",
+        "description": "Update an owned project and return refreshed evidence proposals.",
+        "operationId": "update_project_api_v1_candidates_me_projects__project_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "description": "Id of a project.",
+              "title": "Project Id"
+            },
+            "description": "Id of a project."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CandidateProjectUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandidateProjectWithProposalsRead"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller is authenticated but not allowed to do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such resource, or not visible to the caller.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request body or parameters are invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "Delete one of my projects",
+        "description": "Delete an owned project.",
+        "operationId": "delete_project_api_v1_candidates_me_projects__project_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "description": "Id of a project.",
+              "title": "Project Id"
+            },
+            "description": "Id of a project."
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Missing, invalid or expired credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller is authenticated but not allowed to do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such resource, or not visible to the caller.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1159,6 +1540,318 @@
         "title": "CandidateProfileUpdate",
         "description": "Body of ``PATCH /candidates/me``: only the fields sent are changed.\n\n``summary`` and ``city`` accept ``null`` to clear them; ``display_name`` and ``languages``\ncannot be null (send ``[]`` to clear the languages)."
       },
+      "CandidateProjectCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 5000,
+            "minLength": 1,
+            "title": "Description"
+          },
+          "role": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Role"
+          },
+          "stack": {
+            "items": {
+              "type": "string",
+              "maxLength": 60,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Stack"
+          },
+          "source_type": {
+            "$ref": "#/components/schemas/ProjectSourceType",
+            "default": "manual"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "project_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Project Date"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "description",
+          "role",
+          "project_date"
+        ],
+        "title": "CandidateProjectCreate",
+        "description": "Body of ``POST /candidates/me/projects``."
+      },
+      "CandidateProjectRead": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "stack": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Stack"
+          },
+          "source_type": {
+            "$ref": "#/components/schemas/ProjectSourceType"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "project_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Project Date"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "role",
+          "stack",
+          "source_type",
+          "source_url",
+          "project_date",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "CandidateProjectRead",
+        "description": "A manually entered project."
+      },
+      "CandidateProjectUpdate": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 5000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "stack": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "maxLength": 60,
+                  "minLength": 1
+                },
+                "type": "array",
+                "maxItems": 30
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stack"
+          },
+          "source_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProjectSourceType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "project_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Date"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "CandidateProjectUpdate",
+        "description": "Body of ``PATCH /candidates/me/projects/{project_id}``."
+      },
+      "CandidateProjectWithProposalsRead": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "stack": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Stack"
+          },
+          "source_type": {
+            "$ref": "#/components/schemas/ProjectSourceType"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "project_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Project Date"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "evidence_proposals": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceProposalRead"
+            },
+            "type": "array",
+            "title": "Evidence Proposals"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "role",
+          "stack",
+          "source_type",
+          "source_url",
+          "project_date",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "CandidateProjectWithProposalsRead",
+        "description": "Project with evidence proposals derived from text."
+      },
       "ContractType": {
         "type": "string",
         "enum": [
@@ -1169,6 +1862,36 @@
         ],
         "title": "ContractType",
         "description": "Kinds of engagement the candidate is open to."
+      },
+      "EvidenceProposalRead": {
+        "properties": {
+          "canonical_id": {
+            "type": "string",
+            "title": "Canonical Id"
+          },
+          "skill": {
+            "type": "string",
+            "title": "Skill"
+          },
+          "matched_term": {
+            "type": "string",
+            "title": "Matched Term"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "Where the term was matched: name, description, role, or stack."
+          }
+        },
+        "type": "object",
+        "required": [
+          "canonical_id",
+          "skill",
+          "matched_term",
+          "source"
+        ],
+        "title": "EvidenceProposalRead",
+        "description": "A skill proposal extracted from project text against the local taxonomy."
       },
       "HTTPValidationError": {
         "properties": {
@@ -1368,6 +2091,17 @@
         ],
         "title": "ProblemResponse",
         "description": "RFC 9457 problem details, as returned for every error."
+      },
+      "ProjectSourceType": {
+        "type": "string",
+        "enum": [
+          "manual",
+          "github",
+          "portfolio",
+          "other"
+        ],
+        "title": "ProjectSourceType",
+        "description": "Origin of a manually entered project."
       },
       "PublicRole": {
         "type": "string",
