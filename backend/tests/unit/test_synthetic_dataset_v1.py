@@ -1,25 +1,24 @@
 import json
 from datetime import date
 from pathlib import Path
-
-from skillmatch.modules.skills import load_taxonomy
+from typing import Any
 
 
 def _repo_root() -> Path:
     return Path(__file__).resolve().parents[3]
 
 
-def _load(name: str) -> object:
+def _load(name: str) -> Any:  # noqa: ANN401 - JSON dataset payload is dynamic
     path = _repo_root() / "data" / "synthetic" / "v1" / name
     return json.loads(path.read_text(encoding="utf-8"))
 
 
 def test_synthetic_dataset_counts() -> None:
-    manifest = _load("manifest.json")
-    companies = _load("companies.json")
-    vacancies = _load("vacancies.json")
-    candidates = _load("candidates.json")
-    projects = _load("projects.json")
+    manifest: dict[str, Any] = _load("manifest.json")
+    companies: list[dict[str, Any]] = _load("companies.json")
+    vacancies: list[dict[str, Any]] = _load("vacancies.json")
+    candidates: list[dict[str, Any]] = _load("candidates.json")
+    projects: list[dict[str, Any]] = _load("projects.json")
 
     assert manifest["counts"] == {
         "companies": 3,
@@ -37,8 +36,8 @@ def test_synthetic_dataset_references() -> None:
     companies = {c["company_id"] for c in _load("companies.json")}
     candidates = {c["candidate_id"] for c in _load("candidates.json")}
     projects = {p["project_id"]: p for p in _load("projects.json")}
-    vacancies = _load("vacancies.json")
-    candidate_rows = _load("candidates.json")
+    vacancies: list[dict[str, Any]] = _load("vacancies.json")
+    candidate_rows: list[dict[str, Any]] = _load("candidates.json")
 
     for vacancy in vacancies:
         assert vacancy["company_id"] in companies
@@ -54,9 +53,11 @@ def test_synthetic_dataset_references() -> None:
 
 
 def test_synthetic_dataset_uses_canonical_skills() -> None:
+    from skillmatch.modules.skills import load_taxonomy
+
     taxonomy_ids = {s.canonical_id for s in load_taxonomy()}
-    candidates = _load("candidates.json")
-    vacancies = _load("vacancies.json")
+    candidates: list[dict[str, Any]] = _load("candidates.json")
+    vacancies: list[dict[str, Any]] = _load("vacancies.json")
 
     for candidate in candidates:
         for skill in candidate["skills"]:
@@ -71,7 +72,7 @@ def test_synthetic_dataset_uses_canonical_skills() -> None:
 
 def test_synthetic_dataset_date_coherence() -> None:
     reference = date(2026, 11, 26)
-    projects = _load("projects.json")
+    projects: list[dict[str, Any]] = _load("projects.json")
     for project in projects:
         start = date.fromisoformat(project["start_date"])
         end = date.fromisoformat(project["end_date"])
@@ -80,7 +81,7 @@ def test_synthetic_dataset_date_coherence() -> None:
         assert abs((reference - end).days) <= 365, project["project_id"]
 
     for name in ["companies.json", "vacancies.json", "candidates.json", "projects.json"]:
-        rows = _load(name)
+        rows: list[dict[str, Any]] = _load(name)
         for row in rows:
             for key, value in row.items():
                 if (
