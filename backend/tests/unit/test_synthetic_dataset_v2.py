@@ -1,6 +1,7 @@
 import json
 from datetime import date
 from pathlib import Path
+from typing import Any
 
 from skillmatch.modules.skills import load_taxonomy
 
@@ -9,7 +10,7 @@ def _repo_root() -> Path:
     return Path(__file__).resolve().parents[3]
 
 
-def _load(name: str):
+def _load(name: str) -> Any:  # noqa: ANN401 - JSON dataset payload is dynamic
     path = _repo_root() / "data" / "synthetic" / "v2" / name
     return json.loads(path.read_text(encoding="utf-8"))
 
