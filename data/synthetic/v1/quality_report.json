@@ -50,6 +50,7 @@
       "weight": 0.25,
       "details": {
         "stale_or_out_of_window_dates": 0,
+        "incoherent_project_date_ranges": 0,
         "total_date_fields_checked": 84,
         "window_days": 365
       }
@@ -60,6 +61,6 @@
   "notes": [
     "Synthetic dataset; no real personal data used.",
     "Completeness checks required non-empty fields by entity schema subset.",
-    "Timeliness checks date fields are within +/-365 days of reference date for seed freshness."
+    "Timeliness checks date fields are within +/-365 days of reference date and project start_date <= end_date."
   ]
 }
