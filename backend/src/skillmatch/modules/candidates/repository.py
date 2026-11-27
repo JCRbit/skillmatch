@@ -245,3 +245,14 @@ class CandidateRepository:
     def add_consent(self, consent: CandidateConsent) -> None:
         """Stage a new consent row for insertion."""
         self._session.add(consent)
+
+    async def get_profile_by_id(self, profile_id: int) -> CandidateProfile | None:
+        """Return a profile by its id, whoever owns it.
+
+        Used by the pseudonymised projection, which is the only read that is not scoped to the
+        owner: the caller must check that the profile is shared before building a response.
+        """
+        result = await self._session.execute(
+            select(CandidateProfile).where(CandidateProfile.id == profile_id)
+        )
+        return result.scalar_one_or_none()

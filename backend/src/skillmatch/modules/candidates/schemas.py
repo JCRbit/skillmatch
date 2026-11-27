@@ -7,7 +7,7 @@ matters because these bodies carry personal data.
 """
 
 import re
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from datetime import UTC, date, datetime
 from typing import Annotated, Any, Final, Literal, Self
 
@@ -645,3 +645,33 @@ class ConsentsRead(BaseModel):
                 for consent in (by_purpose.get(purpose.value),)
             ]
         )
+
+
+# --------------------------------------------------------------------------- #
+# Pseudonymised projection (B-06)
+# --------------------------------------------------------------------------- #
+class ProjectedSkill(BaseModel):
+    """A skill as a company sees it: the name and the declared level, no row id."""
+
+    name: str
+    level: SkillLevel
+
+
+class CandidateProjection(BaseModel):
+    """The pseudonymised profile a company may see (US-15, FR-012).
+
+    Every field is optional because each one is shared only under its own consent: a field that
+    is absent was not shared, and the client cannot tell it apart from an empty one. There is no
+    identity, contact or link field here, and none can be added without changing this class.
+    """
+
+    display_name: str
+    summary: str | None = None
+    city: str | None = None
+    languages: list[str] | None = None
+    skills: list[ProjectedSkill] | None = None
+
+    @classmethod
+    def from_projection(cls, data: Mapping[str, Any]) -> Self:
+        """Build the response from the allowlisted projection dictionary."""
+        return cls.model_validate(data)

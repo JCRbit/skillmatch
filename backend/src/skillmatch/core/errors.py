@@ -6,7 +6,6 @@ same shape. Validation errors never echo the submitted input, because it may con
 data.
 """
 
-import logging
 from collections.abc import Mapping
 from http import HTTPStatus
 from typing import ClassVar
@@ -16,9 +15,9 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from skillmatch.core.logging import REQUEST_ID_HEADER
+from skillmatch.core.logging import REQUEST_ID_HEADER, get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger("skillmatch")
 
 PROBLEM_JSON = "application/problem+json"
 
@@ -171,7 +170,8 @@ def register_exception_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(Exception)
     async def handle_unexpected_error(request: Request, _exc: Exception) -> JSONResponse:
-        # The traceback goes to the logs only; the client receives a generic message.
+        # The exception's type goes to the logs only, never its message or traceback: both can
+        # carry the personal data that caused it (FR-012). The client gets a generic message.
         request_id = getattr(request.state, "request_id", None)
 
         logger.exception(
