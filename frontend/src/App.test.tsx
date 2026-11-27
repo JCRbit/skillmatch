@@ -1,4 +1,4 @@
-﻿import { renderToStaticMarkup } from 'react-dom/server'
+import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 import { App } from './App'
