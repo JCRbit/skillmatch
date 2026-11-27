@@ -8,7 +8,7 @@ matters because these bodies carry personal data.
 
 import re
 from collections.abc import Mapping, Sequence
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import Annotated, Any, Final, Self
 
 from pydantic import (
@@ -25,9 +25,11 @@ from pydantic import (
 from skillmatch.modules.candidates.models import (
     CandidateConsent,
     CandidateProfile,
+    CandidateProject,
     CandidateSkill,
     ConsentPurpose,
     ContractType,
+    ProjectSourceType,
     SkillLevel,
     WorkMode,
 )
@@ -310,6 +312,181 @@ class SkillRead(BaseModel):
 
 
 # --------------------------------------------------------------------------- #
+# Projects / evidence proposals (S-06)
+# --------------------------------------------------------------------------- #
+PROJECT_NAME_MAX_LENGTH: Final = 120
+PROJECT_ROLE_MAX_LENGTH: Final = 120
+PROJECT_DESCRIPTION_MAX_LENGTH: Final = 5000
+PROJECT_URL_MAX_LENGTH: Final = 500
+MAX_PROJECT_STACK_ITEMS: Final = 30
+
+
+class EvidenceProposalRead(BaseModel):
+    """A skill proposal extracted from project text against the local taxonomy."""
+
+    canonical_id: str
+    skill: str
+    matched_term: str
+    source: str = Field(
+        description="Where the term was matched: name, description, role, or stack."
+    )
+
+
+class CandidateProjectCreate(_Request):
+    """Body of ``POST /candidates/me/projects``."""
+
+    name: Annotated[
+        str,
+        BeforeValidator(_collapse_spaces),
+        StringConstraints(min_length=1, max_length=PROJECT_NAME_MAX_LENGTH),
+    ]
+    description: Annotated[
+        str,
+        BeforeValidator(_strip),
+        StringConstraints(min_length=1, max_length=PROJECT_DESCRIPTION_MAX_LENGTH),
+    ]
+    role: Annotated[
+        str,
+        BeforeValidator(_collapse_spaces),
+        StringConstraints(min_length=1, max_length=PROJECT_ROLE_MAX_LENGTH),
+    ]
+    stack: Annotated[
+        list[
+            Annotated[
+                str,
+                BeforeValidator(_collapse_spaces),
+                StringConstraints(min_length=1, max_length=SKILL_NAME_MAX_LENGTH),
+            ]
+        ],
+        Field(max_length=MAX_PROJECT_STACK_ITEMS),
+        AfterValidator(_no_duplicates),
+    ] = Field(default_factory=list)
+    source_type: ProjectSourceType = ProjectSourceType.MANUAL
+    source_url: (
+        Annotated[
+            str,
+            BeforeValidator(_strip),
+            StringConstraints(min_length=1, max_length=PROJECT_URL_MAX_LENGTH),
+        ]
+        | None
+    ) = None
+    project_date: date
+
+
+class CandidateProjectUpdate(_Request):
+    """Body of ``PATCH /candidates/me/projects/{project_id}``."""
+
+    name: (
+        Annotated[
+            str,
+            BeforeValidator(_collapse_spaces),
+            StringConstraints(min_length=1, max_length=PROJECT_NAME_MAX_LENGTH),
+        ]
+        | None
+    ) = None
+    description: (
+        Annotated[
+            str,
+            BeforeValidator(_strip),
+            StringConstraints(min_length=1, max_length=PROJECT_DESCRIPTION_MAX_LENGTH),
+        ]
+        | None
+    ) = None
+    role: (
+        Annotated[
+            str,
+            BeforeValidator(_collapse_spaces),
+            StringConstraints(min_length=1, max_length=PROJECT_ROLE_MAX_LENGTH),
+        ]
+        | None
+    ) = None
+    stack: (
+        Annotated[
+            list[
+                Annotated[
+                    str,
+                    BeforeValidator(_collapse_spaces),
+                    StringConstraints(min_length=1, max_length=SKILL_NAME_MAX_LENGTH),
+                ]
+            ],
+            Field(max_length=MAX_PROJECT_STACK_ITEMS),
+            AfterValidator(_no_duplicates),
+        ]
+        | None
+    ) = None
+    source_type: ProjectSourceType | None = None
+    source_url: (
+        Annotated[
+            str,
+            BeforeValidator(_strip),
+            StringConstraints(min_length=1, max_length=PROJECT_URL_MAX_LENGTH),
+        ]
+        | None
+    ) = None
+    project_date: date | None = None
+
+    @model_validator(mode="after")
+    def _at_least_one_valid_field(self) -> Self:
+        """Require a change and refuse null for non-nullable project fields."""
+        if not self.model_fields_set:
+            msg = "at least one field must be provided"
+            raise ValueError(msg)
+
+        non_nullable_fields = (
+            "name",
+            "description",
+            "role",
+            "stack",
+            "source_type",
+            "project_date",
+        )
+        for name in non_nullable_fields:
+            if name in self.model_fields_set and getattr(self, name) is None:
+                msg = f"{name} must not be null"
+                raise ValueError(msg)
+
+        return self
+
+
+class CandidateProjectRead(BaseModel):
+    """A manually entered project."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    description: str
+    role: str
+    stack: list[str]
+    source_type: ProjectSourceType
+    source_url: str | None
+    project_date: date
+    created_at: UtcDatetime
+    updated_at: UtcDatetime
+
+    @classmethod
+    def from_project(cls, project: CandidateProject) -> Self:
+        """Build the representation of a stored project."""
+        return cls(
+            id=project.id,
+            name=project.name,
+            description=project.description,
+            role=project.role,
+            stack=list(project.stack),
+            source_type=ProjectSourceType(project.source_type),
+            source_url=project.source_url,
+            project_date=project.project_date,
+            created_at=project.created_at,
+            updated_at=project.updated_at,
+        )
+
+
+class CandidateProjectWithProposalsRead(CandidateProjectRead):
+    """Project with evidence proposals derived from text."""
+
+    evidence_proposals: list[EvidenceProposalRead] = Field(default_factory=list)
+
+
 # Consent
 # --------------------------------------------------------------------------- #
 class ConsentUpdate(_Request):

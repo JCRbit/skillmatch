@@ -6,6 +6,7 @@ that user's rows. Authorisation by role and ownership checks are applied at the 
 with the dependencies of :mod:`skillmatch.api.deps`; the scoping here is a second barrier.
 """
 
+import re
 from collections.abc import Sequence
 from datetime import UTC, datetime
 from typing import Any, Final
@@ -23,6 +24,7 @@ from skillmatch.modules.candidates.errors import (
 from skillmatch.modules.candidates.models import (
     CandidateConsent,
     CandidateProfile,
+    CandidateProject,
     CandidateSkill,
     ConsentPurpose,
 )
@@ -31,12 +33,15 @@ from skillmatch.modules.candidates.repository import CandidateRepository
 from skillmatch.modules.candidates.schemas import (
     CandidateProfileCreate,
     CandidateProfileUpdate,
+    CandidateProjectCreate,
+    CandidateProjectUpdate,
     ConsentUpdate,
     PreferencesUpdate,
     SkillCreate,
     SkillUpdate,
     VisibilityUpdate,
 )
+from skillmatch.modules.skills import build_alias_index, load_taxonomy, normalize_alias
 
 MAX_SKILLS_PER_CANDIDATE: Final = 50
 """Upper bound of declared skills per candidate; keeps a profile (and its payloads) bounded."""
@@ -51,6 +56,8 @@ from one that does not exist."""
 _SKILL_NOT_FOUND: Final = "Recurso no encontrado."
 """Same wording as ``verify_resource_ownership`` so a missing skill and someone else's skill
 are indistinguishable to the caller."""
+
+_PROJECT_NOT_FOUND: Final = "Recurso no encontrado."
 
 _SKILL_NAME_UNIQUE_CONSTRAINT: Final = "uq_candidate_skills_candidate_id_name_key"
 
@@ -311,6 +318,136 @@ class CandidateService:
             if _is_skill_name_unique_violation(exc):
                 raise SkillAlreadyDeclaredError from exc
             raise
+
+    # ------------------------------------------------------------------ projects (S-06)
+    async def list_projects(self, user_id: int) -> Sequence[CandidateProject]:
+        """Return the caller's projects."""
+        profile = await self.get_profile(user_id)
+        return await self._repository.list_projects(profile.id)
+
+    async def create_project(
+        self, user_id: int, data: CandidateProjectCreate
+    ) -> tuple[CandidateProject, list[dict[str, str]]]:
+        """Create a manual project and compute evidence proposals."""
+        profile = await self.get_profile(user_id)
+        project = CandidateProject(
+            candidate_id=profile.id,
+            name=data.name,
+            description=data.description,
+            role=data.role,
+            stack=list(data.stack),
+            source_type=data.source_type.value,
+            source_url=data.source_url,
+            project_date=data.project_date,
+        )
+        self._repository.add(project)
+        await self._session.commit()
+        await self._session.refresh(project)
+        return project, self.propose_evidence(project)
+
+    async def get_project_owner_id(self, project_id: int) -> int:
+        """Return owner user_id for ownership checks."""
+        owner_id = await self._repository.get_project_owner_id(project_id)
+        if owner_id is None:
+            raise NotFoundError(_PROJECT_NOT_FOUND)
+        return owner_id
+
+    async def get_project(
+        self, project_id: int, user_id: int
+    ) -> tuple[CandidateProject, list[dict[str, str]]]:
+        """Return an owned project and its proposals."""
+        project = await self._require_owned_project(project_id, user_id)
+        return project, self.propose_evidence(project)
+
+    async def update_project(
+        self, project_id: int, user_id: int, data: CandidateProjectUpdate
+    ) -> tuple[CandidateProject, list[dict[str, str]]]:
+        """Update an owned project."""
+        project = await self._require_owned_project(project_id, user_id)
+        for field, value in data.model_dump(exclude_unset=True).items():
+            if field == "source_type" and value is not None:
+                setattr(project, field, value.value)
+            else:
+                setattr(project, field, value)
+        await self._session.commit()
+        await self._session.refresh(project)
+        return project, self.propose_evidence(project)
+
+    async def delete_project(self, project_id: int, user_id: int) -> None:
+        """Delete an owned project."""
+        project = await self._require_owned_project(project_id, user_id)
+        await self._repository.delete_project(project)
+        await self._session.commit()
+
+    async def _require_owned_project(self, project_id: int, user_id: int) -> CandidateProject:
+        project = await self._repository.get_owned_project(project_id, user_id)
+        if project is None:
+            raise NotFoundError(_PROJECT_NOT_FOUND)
+        return project
+
+    def propose_evidence(self, project: CandidateProject) -> list[dict[str, str]]:
+        """Propose canonical skills from project text using taxonomy aliases.
+
+        Manual, deterministic text matching only. No code execution.
+        """
+        taxonomy = load_taxonomy()
+        skills_by_id = {s.canonical_id: s for s in taxonomy}
+        alias_index = build_alias_index(taxonomy)
+
+        proposals: dict[str, dict[str, str]] = {}
+
+        # 1) Stack items: exact normalized alias resolution
+        for item in project.stack:
+            canonical_id = alias_index.get(normalize_alias(item))
+            if canonical_id and canonical_id not in proposals:
+                skill = skills_by_id[canonical_id]
+                proposals[canonical_id] = {
+                    "canonical_id": canonical_id,
+                    "skill": skill.skill,
+                    "matched_term": item,
+                    "source": "stack",
+                }
+
+        # 2) Free text fields: conservative word-boundary matching
+        text_sources = [
+            ("name", project.name),
+            ("role", project.role),
+            ("description", project.description),
+        ]
+        # Build candidate aliases, skipping very short ambiguous ones
+        safe_aliases: list[
+            tuple[str, str, str]
+        ] = []  # (normalized_alias, canonical_id, original_alias)
+        seen: set[tuple[str, str]] = set()
+        for skill in taxonomy:
+            for alias in (skill.skill, *skill.aliases):
+                norm = normalize_alias(alias)
+                if not norm or len(norm) < 3:
+                    continue
+                key = (norm, skill.canonical_id)
+                if key in seen:
+                    continue
+                seen.add(key)
+                safe_aliases.append((norm, skill.canonical_id, alias))
+        # Match longer aliases first to prefer specific matches
+        safe_aliases.sort(key=lambda x: len(x[0]), reverse=True)
+
+        for source_name, text in text_sources:
+            norm_text = f" {normalize_alias(text)} "
+            for norm_alias, canonical_id, original_alias in safe_aliases:
+                if canonical_id in proposals:
+                    continue
+                pattern = r"(?<![a-z0-9])" + re.escape(norm_alias) + r"(?![a-z0-9])"
+                if re.search(pattern, norm_text):
+                    skill = skills_by_id[canonical_id]
+                    proposals[canonical_id] = {
+                        "canonical_id": canonical_id,
+                        "skill": skill.skill,
+                        "matched_term": original_alias,
+                        "source": source_name,
+                    }
+
+        return list(proposals.values())
 
     # ------------------------------------------------------------------ consent
     async def list_consents(self, user_id: int) -> Sequence[CandidateConsent]:
