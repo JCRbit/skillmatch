@@ -1333,6 +1333,296 @@
         }
       }
     },
+    "/api/v1/candidates/me/projects/{project_id}/evidences": {
+      "get": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "List evidence signals for one of my projects",
+        "description": "List reviewable evidence signals for an owned project.",
+        "operationId": "list_evidences_api_v1_candidates_me_projects__project_id__evidences_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "description": "Id of a project.",
+              "title": "Project Id"
+            },
+            "description": "Id of a project."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EvidenceRead"
+                  },
+                  "title": "Response List Evidences Api V1 Candidates Me Projects  Project Id  Evidences Get"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller is authenticated but not allowed to do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such resource, or not visible to the caller.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/candidates/me/projects/{project_id}/evidences/{evidence_id}": {
+      "patch": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "Review an evidence signal",
+        "description": "Confirm, correct, or withdraw an evidence signal and leave an audit trail.",
+        "operationId": "review_evidence_api_v1_candidates_me_projects__project_id__evidences__evidence_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "description": "Id of a project.",
+              "title": "Project Id"
+            },
+            "description": "Id of a project."
+          },
+          {
+            "name": "evidence_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "description": "Id of an evidence.",
+              "title": "Evidence Id"
+            },
+            "description": "Id of an evidence."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvidenceReviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvidenceRead"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller is authenticated but not allowed to do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such resource, or not visible to the caller.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request body or parameters are invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/candidates/me/projects/{project_id}/evidences/{evidence_id}/audit": {
+      "get": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "List audit trail for an evidence signal",
+        "description": "Return the audit trail for an evidence signal.",
+        "operationId": "list_evidence_audit_api_v1_candidates_me_projects__project_id__evidences__evidence_id__audit_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "description": "Id of a project.",
+              "title": "Project Id"
+            },
+            "description": "Id of a project."
+          },
+          {
+            "name": "evidence_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "description": "Id of an evidence.",
+              "title": "Evidence Id"
+            },
+            "description": "Id of an evidence."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EvidenceAuditRead"
+                  },
+                  "title": "Response List Evidence Audit Api V1 Candidates Me Projects  Project Id  Evidences  Evidence Id  Audit Get"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller is authenticated but not allowed to do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such resource, or not visible to the caller.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/candidates/me/consents": {
       "get": {
         "tags": [
@@ -2698,6 +2988,13 @@
             },
             "type": "array",
             "title": "Evidence Proposals"
+          },
+          "evidences": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRead"
+            },
+            "type": "array",
+            "title": "Evidences"
           }
         },
         "type": "object",
@@ -3075,6 +3372,46 @@
         "title": "ConsentsRead",
         "description": "Every purpose, always present, so a client never has to guess a missing one."
       },
+      "EvidenceAuditRead": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "from_status": {
+            "$ref": "#/components/schemas/EvidenceStatus"
+          },
+          "to_status": {
+            "$ref": "#/components/schemas/EvidenceStatus"
+          },
+          "before": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Before"
+          },
+          "after": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "After"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "action",
+          "from_status",
+          "to_status",
+          "before",
+          "after",
+          "created_at"
+        ],
+        "title": "EvidenceAuditRead",
+        "description": "Audit record for an evidence review action."
+      },
       "EvidenceProposalRead": {
         "properties": {
           "canonical_id": {
@@ -3104,6 +3441,152 @@
         ],
         "title": "EvidenceProposalRead",
         "description": "A skill proposal extracted from project text against the local taxonomy."
+      },
+      "EvidenceRead": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "canonical_id": {
+            "type": "string",
+            "title": "Canonical Id"
+          },
+          "skill_label": {
+            "type": "string",
+            "title": "Skill Label"
+          },
+          "matched_term": {
+            "type": "string",
+            "title": "Matched Term"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "status": {
+            "$ref": "#/components/schemas/EvidenceStatus"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "canonical_id",
+          "skill_label",
+          "matched_term",
+          "source",
+          "status",
+          "note",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "EvidenceRead",
+        "description": "A reviewable evidence signal for a project."
+      },
+      "EvidenceReviewRequest": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "confirm",
+              "correct",
+              "withdraw"
+            ],
+            "title": "Action",
+            "description": "Review action: confirm, correct, or withdraw the evidence."
+          },
+          "canonical_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Canonical Id"
+          },
+          "skill_label": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Skill Label"
+          },
+          "matched_term": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Matched Term"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "title": "EvidenceReviewRequest",
+        "description": "Body of ``PATCH /candidates/me/projects/{project_id}/evidences/{evidence_id}``."
+      },
+      "EvidenceStatus": {
+        "type": "string",
+        "enum": [
+          "proposed",
+          "confirmed",
+          "corrected",
+          "withdrawn"
+        ],
+        "title": "EvidenceStatus",
+        "description": "Review state of a project evidence signal."
       },
       "HTTPValidationError": {
         "properties": {

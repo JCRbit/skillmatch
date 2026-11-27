@@ -11,6 +11,7 @@ consent and the blind-review projection are built on top of these flags by tasks
 
 from datetime import UTC, date, datetime
 from enum import StrEnum
+from typing import Any
 
 from sqlalchemy import (
     JSON,
@@ -185,6 +186,80 @@ class CandidateProject(Base):
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_utc_now, onupdate=_utc_now
+    )
+
+
+class EvidenceStatus(StrEnum):
+    """Review state of a project evidence signal."""
+
+    PROPOSED = "proposed"
+    CONFIRMED = "confirmed"
+    CORRECTED = "corrected"
+    WITHDRAWN = "withdrawn"
+
+
+class CandidateProjectEvidence(Base):
+    """A reviewable skill evidence signal derived from a candidate project."""
+
+    __tablename__ = "candidate_project_evidences"
+    __table_args__ = (
+        UniqueConstraint(
+            "project_id",
+            "canonical_id",
+            name="uq_candidate_project_evidences_project_canonical",
+        ),
+        CheckConstraint(
+            "status IN ('proposed', 'confirmed', 'corrected', 'withdrawn')",
+            name="ck_candidate_project_evidences_status",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    project_id: Mapped[int] = mapped_column(
+        ForeignKey("candidate_projects.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    candidate_id: Mapped[int] = mapped_column(
+        ForeignKey("candidate_profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    canonical_id: Mapped[str] = mapped_column(String(120), nullable=False)
+    skill_label: Mapped[str] = mapped_column(String(120), nullable=False)
+    matched_term: Mapped[str] = mapped_column(String(120), nullable=False)
+    source: Mapped[str] = mapped_column(String(20), nullable=False)
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default=EvidenceStatus.PROPOSED.value
+    )
+    note: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_utc_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_utc_now, onupdate=_utc_now
+    )
+
+
+class CandidateProjectEvidenceAudit(Base):
+    """Append-only audit trail for evidence review actions."""
+
+    __tablename__ = "candidate_project_evidence_audits"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    evidence_id: Mapped[int] = mapped_column(
+        ForeignKey("candidate_project_evidences.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    project_id: Mapped[int] = mapped_column(
+        ForeignKey("candidate_projects.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    actor_user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    action: Mapped[str] = mapped_column(String(20), nullable=False)
+    from_status: Mapped[str] = mapped_column(String(20), nullable=False)
+    to_status: Mapped[str] = mapped_column(String(20), nullable=False)
+    before: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+    after: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_utc_now
     )
 
 

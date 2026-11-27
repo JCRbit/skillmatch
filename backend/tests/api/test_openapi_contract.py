@@ -85,6 +85,17 @@ CANDIDATE_OPERATIONS = [
         {"200", "401", "403", "404", "422"},
     ),
     ("/api/v1/candidates/me/projects/{project_id}", "delete", {"204", "401", "403", "404"}),
+    ("/api/v1/candidates/me/projects/{project_id}/evidences", "get", {"200", "401", "403", "404"}),
+    (
+        "/api/v1/candidates/me/projects/{project_id}/evidences/{evidence_id}",
+        "patch",
+        {"200", "401", "403", "404", "422"},
+    ),
+    (
+        "/api/v1/candidates/me/projects/{project_id}/evidences/{evidence_id}/audit",
+        "get",
+        {"200", "401", "403", "404"},
+    ),
 ]
 
 
@@ -110,7 +121,7 @@ def test_no_candidate_url_carries_a_candidate_identifier(account_client: TestCli
     # ``/candidates/{candidate_id}`` is the pseudonymised projection (B-06). The id is the
     # profile's, never the account's, and it belongs to a company reading a profile the
     # candidate chose to share; every other candidate URL must stay free of identifiers.
-    allowed_params = {"{skill_id}", "{project_id}", "{purpose}", "{candidate_id}"}
+    allowed_params = {"{skill_id}", "{project_id}", "{evidence_id}", "{purpose}", "{candidate_id}"}
     assert all(
         all(part in allowed_params for part in path.split("/") if part.startswith("{"))
         for path in candidate_paths
@@ -133,7 +144,7 @@ def test_the_candidate_contract_has_no_identity_fields(account_client: TestClien
         assert schemas[name]["additionalProperties"] is False, name
 
     project_identity = identity - {"id", "role"}
-    for name in ("CandidateProjectCreate", "CandidateProjectUpdate"):
+    for name in ("CandidateProjectCreate", "CandidateProjectUpdate", "EvidenceReviewRequest"):
         assert not project_identity & set(schemas[name]["properties"]), name
         assert schemas[name]["additionalProperties"] is False, name
     assert not identity & set(schemas["CandidateProfileRead"]["properties"])

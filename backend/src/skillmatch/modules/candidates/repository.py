@@ -15,6 +15,8 @@ from skillmatch.modules.candidates.models import (
     CandidateConsent,
     CandidateProfile,
     CandidateProject,
+    CandidateProjectEvidence,
+    CandidateProjectEvidenceAudit,
     CandidateSkill,
 )
 
@@ -40,8 +42,17 @@ class CandidateRepository:
         )
         return result.scalar_one_or_none()
 
-    def add(self, entity: CandidateProfile | CandidateSkill | CandidateProject) -> None:
-        """Stage a new profile, skill, or project for insertion."""
+    def add(
+        self,
+        entity: (
+            CandidateProfile
+            | CandidateSkill
+            | CandidateProject
+            | CandidateProjectEvidence
+            | CandidateProjectEvidenceAudit
+        ),
+    ) -> None:
+        """Stage a new entity for insertion."""
         self._session.add(entity)
 
     async def delete_profile(self, profile: CandidateProfile) -> None:
@@ -146,6 +157,71 @@ class CandidateRepository:
     async def delete_project(self, project: CandidateProject) -> None:
         """Stage deletion of a project."""
         await self._session.delete(project)
+
+    # --------------------------------------------------------------------- evidences (S-07)
+    async def list_evidences(self, project_id: int) -> Sequence[CandidateProjectEvidence]:
+        """Return evidences for a project."""
+        result = await self._session.execute(
+            select(CandidateProjectEvidence)
+            .where(CandidateProjectEvidence.project_id == project_id)
+            .order_by(CandidateProjectEvidence.id.asc())
+        )
+        return result.scalars().all()
+
+    async def get_evidence_owner_id(self, evidence_id: int) -> int | None:
+        """Return user_id owner of an evidence."""
+        result = await self._session.execute(
+            select(CandidateProfile.user_id)
+            .join(CandidateProject, CandidateProject.candidate_id == CandidateProfile.id)
+            .join(
+                CandidateProjectEvidence,
+                CandidateProjectEvidence.project_id == CandidateProject.id,
+            )
+            .where(CandidateProjectEvidence.id == evidence_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def get_owned_evidence(
+        self, evidence_id: int, user_id: int
+    ) -> CandidateProjectEvidence | None:
+        """Return an evidence only if owned by user."""
+        result = await self._session.execute(
+            select(CandidateProjectEvidence)
+            .join(CandidateProject, CandidateProjectEvidence.project_id == CandidateProject.id)
+            .join(CandidateProfile, CandidateProject.candidate_id == CandidateProfile.id)
+            .where(
+                CandidateProjectEvidence.id == evidence_id,
+                CandidateProfile.user_id == user_id,
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def get_evidence_by_project_canonical(
+        self, project_id: int, canonical_id: str
+    ) -> CandidateProjectEvidence | None:
+        """Return evidence by project and canonical skill id."""
+        result = await self._session.execute(
+            select(CandidateProjectEvidence).where(
+                CandidateProjectEvidence.project_id == project_id,
+                CandidateProjectEvidence.canonical_id == canonical_id,
+            )
+        )
+        return result.scalar_one_or_none()
+
+    def add_audit(self, audit: CandidateProjectEvidenceAudit) -> None:
+        """Stage an evidence audit record."""
+        self._session.add(audit)
+
+    async def list_evidence_audits(
+        self, evidence_id: int
+    ) -> Sequence[CandidateProjectEvidenceAudit]:
+        """Return audit trail for an evidence."""
+        result = await self._session.execute(
+            select(CandidateProjectEvidenceAudit)
+            .where(CandidateProjectEvidenceAudit.evidence_id == evidence_id)
+            .order_by(CandidateProjectEvidenceAudit.id.asc())
+        )
+        return result.scalars().all()
 
     async def list_consents(self, profile_id: int) -> Sequence[CandidateConsent]:
         """Return the stored consent rows of a profile, ordered by purpose."""
