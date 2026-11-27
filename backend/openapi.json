@@ -1479,6 +1479,88 @@
         }
       }
     },
+    "/api/v1/candidates/{candidate_id}": {
+      "get": {
+        "tags": [
+          "candidates"
+        ],
+        "summary": "Read a pseudonymised candidate profile",
+        "description": "Return the pseudonymised profile a company may see (US-15, FR-012).\n\nThe company role is enforced by the endpoint dependency. Only fields the candidate shared\nare present: there is no identity, contact or link field, and a profile that is not shared\nanswers ``404``, exactly like one that does not exist.",
+        "operationId": "read_projection_api_v1_candidates__candidate_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "candidate_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "description": "Id of a candidate profile.",
+              "title": "Candidate Id"
+            },
+            "description": "Id of a candidate profile."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandidateProjection"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller is authenticated but not allowed to do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such resource, or not visible to the caller.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request body or parameters are invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/companies/me": {
       "get": {
         "tags": [
@@ -2634,6 +2716,70 @@
         "title": "CandidateProjectWithProposalsRead",
         "description": "Project with evidence proposals derived from text."
       },
+      "CandidateProjection": {
+        "properties": {
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "languages": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Languages"
+          },
+          "skills": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ProjectedSkill"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Skills"
+          }
+        },
+        "type": "object",
+        "required": [
+          "display_name"
+        ],
+        "title": "CandidateProjection",
+        "description": "The pseudonymised profile a company may see (US-15, FR-012).\n\nEvery field is optional because each one is shared only under its own consent: a field that\nis absent was not shared, and the client cannot tell it apart from an empty one. There is no\nidentity, contact or link field here, and none can be added without changing this class."
+      },
       "CompanyCreate": {
         "properties": {
           "name": {
@@ -3168,6 +3314,24 @@
         ],
         "title": "ProjectSourceType",
         "description": "Origin of a manually entered project."
+      },
+      "ProjectedSkill": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "level": {
+            "$ref": "#/components/schemas/SkillLevel"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "level"
+        ],
+        "title": "ProjectedSkill",
+        "description": "A skill as a company sees it: the name and the declared level, no row id."
       },
       "PublicRole": {
         "type": "string",

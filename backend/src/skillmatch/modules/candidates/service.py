@@ -9,7 +9,7 @@ with the dependencies of :mod:`skillmatch.api.deps`; the scoping here is a secon
 import re
 from collections.abc import Sequence
 from datetime import UTC, datetime
-from typing import Final
+from typing import Any, Final
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -28,6 +28,7 @@ from skillmatch.modules.candidates.models import (
     CandidateSkill,
     ConsentPurpose,
 )
+from skillmatch.modules.candidates.projection import project_profile
 from skillmatch.modules.candidates.repository import CandidateRepository
 from skillmatch.modules.candidates.schemas import (
     CandidateProfileCreate,
@@ -47,6 +48,10 @@ MAX_SKILLS_PER_CANDIDATE: Final = 50
 
 DEFAULT_POLICY_VERSION: Final = "2026-11"
 """Version of the privacy text recorded when a client does not send its own."""
+
+_PROFILE_NOT_FOUND: Final = "Recurso no encontrado."
+"""Same wording as a missing resource: a profile that is not shared is indistinguishable
+from one that does not exist."""
 
 _SKILL_NOT_FOUND: Final = "Recurso no encontrado."
 """Same wording as ``verify_resource_ownership`` so a missing skill and someone else's skill
@@ -491,3 +496,38 @@ class CandidateService:
         await self._session.commit()
         await self._session.refresh(consent)
         return consent
+
+    # -------------------------------------------------------------- projection
+    async def get_projection(self, candidate_id: int) -> dict[str, Any]:
+        """Return the pseudonymised projection of one profile for a company (B-06).
+
+        The profile is reachable only when the candidate granted ``DISCOVERY`` *and* kept the
+        ``discoverable`` flag on; otherwise it is answered with ``NotFoundError``, the same
+        response as a profile that does not exist, so a company cannot enumerate candidates.
+
+        Args:
+            candidate_id: Id of the profile the company wants to see.
+
+        Returns:
+            The allowlisted projection of :func:`project_profile`.
+
+        Raises:
+            NotFoundError: The profile does not exist or is not shared.
+        """
+        profile = await self._repository.get_profile_by_id(candidate_id)
+        if profile is None or not profile.discoverable:
+            raise NotFoundError(_PROFILE_NOT_FOUND)
+        granted = {
+            consent.purpose
+            for consent in await self._repository.list_consents(profile.id)
+            if consent.granted
+        }
+        if ConsentPurpose.DISCOVERY.value not in granted:
+            raise NotFoundError(_PROFILE_NOT_FOUND)
+        skills = await self._repository.list_skills(profile.id)
+        return project_profile(
+            profile,
+            skills,
+            location_consented=ConsentPurpose.LOCATION.value in granted,
+            skills_consented=ConsentPurpose.SKILLS.value in granted,
+        )

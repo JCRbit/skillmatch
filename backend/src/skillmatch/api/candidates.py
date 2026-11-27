@@ -20,7 +20,7 @@ one of the authenticated user (:data:`TalentDep`). The only client-supplied iden
 id, and it is checked with :func:`skillmatch.api.deps.verify_resource_ownership` before use.
 """
 
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Path, status
 
@@ -35,6 +35,7 @@ from skillmatch.modules.candidates.schemas import (
     CandidateProjectRead,
     CandidateProjectUpdate,
     CandidateProjectWithProposalsRead,
+    CandidateProjection,
     ConsentRead,
     ConsentsRead,
     ConsentUpdate,
@@ -55,10 +56,18 @@ router = APIRouter(prefix="/candidates", tags=["candidates"])
 TalentDep = Annotated[User, Depends(require_roles(UserRole.TALENTO))]
 """The authenticated candidate. Any other role is answered with ``403 permission_denied``."""
 
+CompanyDep = Annotated[User, Depends(require_roles(UserRole.EMPRESA))]
+"""The authenticated company. Any other role is answered with ``403 permission_denied``."""
+
 _MAX_DB_INTEGER = 2_147_483_647
 SkillIdPath = Annotated[int, Path(ge=1, le=_MAX_DB_INTEGER, description="Id of a declared skill.")]
 """Path parameter of a skill; bounded so it always fits the database integer type."""
 ProjectIdPath = Annotated[int, Path(ge=1, le=_MAX_DB_INTEGER, description="Id of a project.")]
+
+CandidateIdPath = Annotated[
+    int, Path(ge=1, le=_MAX_DB_INTEGER, description="Id of a candidate profile.")
+]
+"""Path parameter of a candidate profile; bounded so it always fits the database integer type."""
 
 ConsentPurposePath = Annotated[ConsentPurpose, Path(description="Purpose the decision applies to.")]
 """Path parameter of a consent purpose; an unknown value answers ``422``."""
@@ -345,3 +354,24 @@ async def set_consent(
         revoked_at=consent.revoked_at,
         policy_version=consent.policy_version,
     )
+
+
+# -------------------------------------------------------------------- projection
+@router.get(
+    "/{candidate_id}",
+    summary="Read a pseudonymised candidate profile",
+    responses=problem_responses(401, 403, 404, 422),
+    dependencies=[Depends(require_roles(UserRole.EMPRESA))],
+    response_model=CandidateProjection,
+    response_model_exclude_none=True,
+)
+async def read_projection(
+    candidate_id: CandidateIdPath, service: CandidateServiceDep
+) -> dict[str, Any]:
+    """Return the pseudonymised profile a company may see (US-15, FR-012).
+
+    The company role is enforced by the endpoint dependency. Only fields the candidate shared
+    are present: there is no identity, contact or link field, and a profile that is not shared
+    answers ``404``, exactly like one that does not exist.
+    """
+    return await service.get_projection(candidate_id)
