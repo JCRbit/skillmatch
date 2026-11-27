@@ -1,0 +1,40 @@
+{
+  "dataset": "skillmatch-synthetic",
+  "version": "v2",
+  "generated_at": "2026-11-26T00:00:00Z",
+  "description": "Synthetic seed dataset v2 for SkillMatch (adds +15 candidates, +6 vacancies, company docs, hard cases).",
+  "counts": {
+    "companies": 3,
+    "vacancies": 14,
+    "candidates": 30,
+    "projects": 32,
+    "company_docs": 3
+  },
+  "files": [
+    "README.md",
+    "manifest.json",
+    "companies.json",
+    "vacancies.json",
+    "candidates.json",
+    "projects.json",
+    "quality_report.json",
+    "company_docs/doc-cmp-001-01.json",
+    "company_docs/doc-cmp-002-01.json",
+    "company_docs/doc-cmp-003-01.json"
+  ],
+  "taxonomy_version": "skills_v1",
+  "dama_total_score_0_100": 100.0,
+  "no_real_data": true,
+  "schema_version": "1.0.0",
+  "checksums": {
+    "README.md": "sha256:475634735f05472baf4ef145a25b570d2c3d3427238e71a354acd61124ad6e1f",
+    "companies.json": "sha256:ed01c198fd80b5198731444c70f640cf61af7710118185f2082ced32745e7176",
+    "vacancies.json": "sha256:05170107b4a0b066fc284d260ffe7fdb301a171e95b2f20a465b8c6a1d8d1ba2",
+    "candidates.json": "sha256:ad70e1fab092b2d4b528a20106f08c4d5df62e7ed9e43692eee62af57f51cfde",
+    "projects.json": "sha256:2bfab012b8866460f46cef316b2a3c6af59b3799dbc8f46e2b5b251a9c7a735c",
+    "quality_report.json": "sha256:7be3139f496b2b5f792ea24e0f9fb792e7b53ac7d3fd27f082e2f7222166832a",
+    "company_docs/doc-cmp-001-01.json": "sha256:a136a76bbfea1fc927d2d819b6db40afd8d70e704eb8d967c0dce575a1a8cd61",
+    "company_docs/doc-cmp-002-01.json": "sha256:6fcaac815f679b42fae90e4d2d1d6c7f52cfeccd2d3a10f1dea17813a2886f20",
+    "company_docs/doc-cmp-003-01.json": "sha256:dccf5bc1cb3659c6e9e926f50f08a6e02e2652754be86290ead4165d4c4424ad"
+  }
+}
