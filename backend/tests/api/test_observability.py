@@ -228,7 +228,8 @@ def test_json_formatter_does_not_leak_internal_attributes() -> None:
     assert not any(key.startswith("_") for key in payload)
 
 
-def test_json_formatter_serialises_the_traceback() -> None:
+def test_json_formatter_drops_the_traceback_and_keeps_the_type() -> None:
+    """A traceback carries the exception's message, so only its type is logged (B-06)."""
     try:
         raise ValueError("boom")
     except ValueError:
@@ -244,7 +245,9 @@ def test_json_formatter_serialises_the_traceback() -> None:
 
     payload = json.loads(JsonFormatter().format(record))
 
-    assert "ValueError: boom" in payload["exception"]
+    assert payload["exception"] == "ValueError"
+    assert "boom" not in json.dumps(payload)
+    assert "Traceback" not in json.dumps(payload)
 
 
 def test_configure_logging_installs_a_single_json_handler() -> None:
@@ -256,7 +259,8 @@ def test_configure_logging_installs_a_single_json_handler() -> None:
     assert logger.level == logging.DEBUG
     assert len(logger.handlers) == 1
     assert isinstance(logger.handlers[0].formatter, JsonFormatter)
-    assert logger.propagate is False
+    # Propagating is what lets a caller's own handler (``caplog`` in tests) see the line.
+    assert logger.propagate is True
 
 
 def test_configure_logging_defaults_to_info_for_invalid_level() -> None:

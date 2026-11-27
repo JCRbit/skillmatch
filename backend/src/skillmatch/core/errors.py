@@ -18,7 +18,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from skillmatch.core.logging import REQUEST_ID_HEADER
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("skillmatch")
 
 PROBLEM_JSON = "application/problem+json"
 
@@ -171,7 +171,8 @@ def register_exception_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(Exception)
     async def handle_unexpected_error(request: Request, _exc: Exception) -> JSONResponse:
-        # The traceback goes to the logs only; the client receives a generic message.
+        # The exception's type goes to the logs only, never its message or traceback: both can
+        # carry the personal data that caused it (FR-012). The client gets a generic message.
         request_id = getattr(request.state, "request_id", None)
 
         logger.exception(
