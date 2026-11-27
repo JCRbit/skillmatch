@@ -62,9 +62,12 @@ class CompanyUpdate(_Request):
     location: Location | None = None
 
     @model_validator(mode="after")
-    def _at_least_one(self) -> Self:
+    def _validate(self) -> Self:
         if not self.model_fields_set:
             msg = "at least one field must be provided"
+            raise ValueError(msg)
+        if "name" in self.model_fields_set and self.name is None:
+            msg = "name must not be null"
             raise ValueError(msg)
         return self
 

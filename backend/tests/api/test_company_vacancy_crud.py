@@ -176,3 +176,40 @@ def test_talento_cannot_access_company_endpoints(
     headers = account("talent@skillmatch.test", "talento")
     res = account_client.post(COMPANIES_ME, json=_company_body(), headers=headers)
     assert_problem(res, status=403, code="permission_denied")
+
+
+def test_company_patch_rejects_null_required_fields(
+    account_client: TestClient, account: Account
+) -> None:
+    headers = account("hr@acme.test", "empresa")
+    assert (
+        account_client.post(COMPANIES_ME, json=_company_body(), headers=headers).status_code == 201
+    )
+
+    response = account_client.patch(COMPANIES_ME, json={"name": None}, headers=headers)
+    assert_problem(response, status=422, code="validation_error")
+
+
+def test_vacancy_patch_rejects_null_required_fields(
+    account_client: TestClient, account: Account
+) -> None:
+    headers = account("hr@acme.test", "empresa")
+    assert (
+        account_client.post(COMPANIES_ME, json=_company_body(), headers=headers).status_code == 201
+    )
+    created = account_client.post(JOBS, json=_vacancy_body(), headers=headers)
+    assert created.status_code == 201
+    vacancy_id = created.json()["id"]
+
+    for field in [
+        "title",
+        "description",
+        "seniority",
+        "work_mode",
+        "contract_type",
+        "essential_skills",
+        "desirable_skills",
+        "status",
+    ]:
+        response = account_client.patch(f"{JOBS}/{vacancy_id}", json={field: None}, headers=headers)
+        assert_problem(response, status=422, code="validation_error"), field

@@ -110,6 +110,20 @@ class VacancyUpdate(_Request):
         if not self.model_fields_set:
             msg = "at least one field must be provided"
             raise ValueError(msg)
+        non_nullable = [
+            "title",
+            "description",
+            "seniority",
+            "work_mode",
+            "contract_type",
+            "essential_skills",
+            "desirable_skills",
+            "status",
+        ]
+        for field in non_nullable:
+            if field in self.model_fields_set and getattr(self, field) is None:
+                msg = f"{field} must not be null"
+                raise ValueError(msg)
         if (
             "salary_min" in self.model_fields_set
             and "salary_max" in self.model_fields_set
