@@ -184,3 +184,77 @@ def test_correct_action_requires_correction_field(account_client: TestClient, an
         headers=ana,
     )
     assert_problem(res, status=422, code="validation_error")
+
+
+def test_evidence_correct_rejects_unknown_canonical_id(
+    account_client: TestClient, ana: Headers
+) -> None:
+    project = _create_project(account_client, ana)
+    project_id = project["id"]
+    evidences = account_client.get(f"{PROJECTS}/{project_id}/evidences", headers=ana).json()
+    evidence_id = evidences[0]["id"]
+
+    response = account_client.patch(
+        f"{PROJECTS}/{project_id}/evidences/{evidence_id}",
+        json={"action": "correct", "canonical_id": "not-a-real-skill"},
+        headers=ana,
+    )
+    assert_problem(response, status=422, code="evidence_canonical_skill_not_found")
+
+
+def test_evidence_correct_rejects_duplicate_canonical_in_project(
+    account_client: TestClient, ana: Headers
+) -> None:
+    project = _create_project(account_client, ana)
+    project_id = project["id"]
+    evidences = account_client.get(f"{PROJECTS}/{project_id}/evidences", headers=ana).json()
+    python_ev = next(e for e in evidences if e["canonical_id"] == "python")
+
+    response = account_client.patch(
+        f"{PROJECTS}/{project_id}/evidences/{python_ev['id']}",
+        json={
+            "action": "correct",
+            "canonical_id": "fastapi",
+            "skill_label": "Wrong Label",
+        },
+        headers=ana,
+    )
+    # fastapi already exists in this project -> conflict
+    assert_problem(response, status=409, code="evidence_canonical_id_conflict")
+
+
+def test_evidence_correct_sets_label_from_taxonomy(
+    account_client: TestClient, ana: Headers
+) -> None:
+    project = _create_project(account_client, ana)
+    project_id = project["id"]
+    evidences = account_client.get(f"{PROJECTS}/{project_id}/evidences", headers=ana).json()
+    python_ev = next(e for e in evidences if e["canonical_id"] == "python")
+
+    response = account_client.patch(
+        f"{PROJECTS}/{project_id}/evidences/{python_ev['id']}",
+        json={"action": "correct", "canonical_id": "typescript", "skill_label": "Wrong Label"},
+        headers=ana,
+    )
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["canonical_id"] == "typescript"
+    # label resolved from taxonomy, not the user-supplied wrong label
+    assert body["skill_label"] == "Programaci\u00f3n con TypeScript"
+    assert body["status"] == "corrected"
+
+
+def test_evidence_correct_duplicate_canonical_returns_conflict(
+    account_client: TestClient, ana: Headers
+) -> None:
+    project = _create_project(account_client, ana)
+    project_id = project["id"]
+    evidences = account_client.get(f"{PROJECTS}/{project_id}/evidences", headers=ana).json()
+    python_ev = next(e for e in evidences if e["canonical_id"] == "python")
+
+    response = account_client.patch(
+        f"{PROJECTS}/{project_id}/evidences/{python_ev['id']}",
+        json={"action": "correct", "canonical_id": "postgresql"},
+        headers=ana,
+    )
+    assert_problem(response, status=409, code="evidence_canonical_id_conflict")

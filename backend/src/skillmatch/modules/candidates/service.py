@@ -18,6 +18,8 @@ from skillmatch.core.errors import NotFoundError
 from skillmatch.modules.candidates.errors import (
     CandidateProfileAlreadyExistsError,
     CandidateProfileNotFoundError,
+    EvidenceCanonicalIdConflictError,
+    EvidenceCanonicalSkillNotFoundError,
     SkillAlreadyDeclaredError,
     SkillLimitReachedError,
 )
@@ -112,6 +114,34 @@ def _is_profile_user_unique_violation(exc: IntegrityError) -> bool:
     return (
         sqlite_errorname == "SQLITE_CONSTRAINT_UNIQUE"
         and str(original) == "UNIQUE constraint failed: candidate_profiles.user_id"
+    )
+
+
+_EVIDENCE_CANONICAL_UNIQUE_CONSTRAINT: Final = "uq_candidate_project_evidences_project_canonical"
+
+
+def _is_evidence_canonical_unique_violation(exc: IntegrityError) -> bool:
+    """Return whether the integrity error violates project evidence canonical uniqueness."""
+    original = exc.orig
+
+    constraint_name = getattr(original, "constraint_name", None)
+    if isinstance(constraint_name, str):
+        return constraint_name == _EVIDENCE_CANONICAL_UNIQUE_CONSTRAINT
+
+    diagnostic = getattr(original, "diag", None)
+    constraint_name = getattr(diagnostic, "constraint_name", None)
+    if isinstance(constraint_name, str):
+        return constraint_name == _EVIDENCE_CANONICAL_UNIQUE_CONSTRAINT
+
+    sqlite_errorname = getattr(original, "sqlite_errorname", None)
+    if not isinstance(sqlite_errorname, str):
+        return False
+
+    return (
+        sqlite_errorname == "SQLITE_CONSTRAINT_UNIQUE"
+        and str(original)
+        == "UNIQUE constraint failed: candidate_project_evidences.project_id, "
+        "candidate_project_evidences.canonical_id"
     )
 
 
@@ -424,8 +454,15 @@ class CandidateService:
             evidence.status = EvidenceStatus.WITHDRAWN.value
         elif data.action == "correct":
             if data.canonical_id is not None:
-                evidence.canonical_id = data.canonical_id
-            if data.skill_label is not None:
+                taxonomy = load_taxonomy()
+                skill = next((s for s in taxonomy if s.canonical_id == data.canonical_id), None)
+                if skill is None:
+                    raise EvidenceCanonicalSkillNotFoundError(
+                        f"Unknown canonical skill: {data.canonical_id!r}"
+                    )
+                evidence.canonical_id = skill.canonical_id
+                evidence.skill_label = skill.skill
+            elif data.skill_label is not None:
                 evidence.skill_label = data.skill_label
             if data.matched_term is not None:
                 evidence.matched_term = data.matched_term
@@ -447,7 +484,15 @@ class CandidateService:
                 after=after,
             )
         )
-        await self._session.commit()
+        try:
+            await self._session.commit()
+        except IntegrityError as exc:
+            await self._session.rollback()
+            if _is_evidence_canonical_unique_violation(exc):
+                raise EvidenceCanonicalIdConflictError(
+                    "Evidence already exists for this canonical skill in the project"
+                ) from exc
+            raise
         await self._session.refresh(evidence)
         return evidence
 
