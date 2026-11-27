@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import (
 from skillmatch.cli.seed import SeedValidationError, load_dataset, seed_dataset
 from skillmatch.core.database import Base
 from skillmatch.modules.candidates.models import CandidateProfile, CandidateSkill
-from skillmatch.modules.identity.models import User
+from skillmatch.modules.identity.models import ACTIVE_ACCOUNT_STATUS, User, UserRole
 
 
 def _repo_root() -> Path:
@@ -106,6 +106,62 @@ def test_load_dataset_rejects_bad_skill(tmp_path: Path) -> None:
     candidates = json.loads((dataset / "candidates.json").read_text(encoding="utf-8"))
     candidates[0]["skills"][0]["canonical_id"] = "not-a-real-skill"
     (dataset / "candidates.json").write_text(json.dumps(candidates), encoding="utf-8")
+
+    with pytest.raises(SeedValidationError):
+        load_dataset(dataset)
+
+
+def test_seed_dataset_rejects_existing_user_with_incompatible_role() -> None:
+    session_factory, engine = _make_session_factory()
+    try:
+        dataset = _dataset_dir()
+        data = load_dataset(dataset)
+        email = data["candidates"][0]["email"].strip().lower()
+
+        async def _insert_conflicting_user() -> None:
+            async with session_factory() as session:
+                session.add(
+                    User(
+                        email=email,
+                        password_hash="hashed",  # noqa: S106 - test fixture, not real secret
+                        role=UserRole.EMPRESA,
+                        status=ACTIVE_ACCOUNT_STATUS,
+                    )
+                )
+                await session.commit()
+
+        asyncio.run(_insert_conflicting_user())
+
+        with pytest.raises(SeedValidationError, match="incompatible role"):
+            asyncio.run(seed_dataset(dataset, session_factory=session_factory, dry_run=False))
+
+        async def _counts() -> tuple[int, int, int]:
+            async with session_factory() as session:
+                users = (await session.execute(select(func.count()).select_from(User))).scalar_one()
+                profiles = (
+                    await session.execute(select(func.count()).select_from(CandidateProfile))
+                ).scalar_one()
+                skills = (
+                    await session.execute(select(func.count()).select_from(CandidateSkill))
+                ).scalar_one()
+                return users, profiles, skills
+
+        users, profiles, skills = asyncio.run(_counts())
+        assert users == 1
+        assert profiles == 0
+        assert skills == 0
+    finally:
+        asyncio.run(engine.dispose())
+
+
+def test_load_dataset_rejects_malformed_structure(tmp_path: Path) -> None:
+    dataset = tmp_path / "v1"
+    dataset.mkdir()
+    src = _dataset_dir()
+    for f in src.glob("*.json"):
+        dataset.joinpath(f.name).write_text(f.read_text(encoding="utf-8"), encoding="utf-8")
+    # malformed: candidates is not a list of candidate dicts
+    (dataset / "candidates.json").write_text(json.dumps({"bad": True}), encoding="utf-8")
 
     with pytest.raises(SeedValidationError):
         load_dataset(dataset)

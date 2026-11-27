@@ -45,6 +45,11 @@ REQUIRED_FILES = [
 ]
 
 
+def _default_dataset_dir() -> Path:
+    """Return the default dataset path relative to the repository root."""
+    return Path(__file__).resolve().parents[4] / "data" / "synthetic" / "v1"
+
+
 @dataclass
 class EntityReport:
     """Counts for one seeded entity."""
@@ -108,73 +113,81 @@ def load_dataset(dataset_dir: Path) -> dict[str, Any]:
     if not dataset_dir.exists() or not dataset_dir.is_dir():
         raise SeedValidationError(f"Dataset directory not found: {dataset_dir}")
 
-    data: dict[str, Any] = {}
-    for name in REQUIRED_FILES:
-        key = name.replace(".json", "")
-        data[key] = _load_json(dataset_dir / name)
+    try:
+        data: dict[str, Any] = {}
+        for name in REQUIRED_FILES:
+            key = name.replace(".json", "")
+            data[key] = _load_json(dataset_dir / name)
 
-    manifest = data["manifest"]
-    counts = manifest.get("counts", {})
-    for entity, expected in EXPECTED_COUNTS.items():
-        actual = counts.get(entity)
-        if actual != expected:
-            raise SeedValidationError(
-                f"Manifest count mismatch for {entity}: expected {expected}, got {actual}"
-            )
-
-    companies = data["companies"]
-    vacancies = data["vacancies"]
-    candidates = data["candidates"]
-    projects = data["projects"]
-
-    if len(companies) != EXPECTED_COUNTS["companies"]:
-        raise SeedValidationError("companies.json count does not match expected count")
-    if len(vacancies) != EXPECTED_COUNTS["vacancies"]:
-        raise SeedValidationError("vacancies.json count does not match expected count")
-    if len(candidates) != EXPECTED_COUNTS["candidates"]:
-        raise SeedValidationError("candidates.json count does not match expected count")
-
-    company_ids = {c["company_id"] for c in companies}
-    for vacancy in vacancies:
-        if vacancy["company_id"] not in company_ids:
-            raise SeedValidationError(
-                f"Vacancy {vacancy.get('vacancy_id')} references unknown company"
-            )
-
-    project_ids = {p["project_id"] for p in projects}
-    candidate_ids = {c["candidate_id"] for c in candidates}
-    for project in projects:
-        if project["candidate_id"] not in candidate_ids:
-            raise SeedValidationError(
-                f"Project {project.get('project_id')} references unknown candidate"
-            )
-    for candidate in candidates:
-        for project_id in candidate.get("project_ids", []):
-            if project_id not in project_ids:
+        manifest = data["manifest"]
+        counts = manifest.get("counts", {})
+        for entity, expected in EXPECTED_COUNTS.items():
+            actual = counts.get(entity)
+            if actual != expected:
                 raise SeedValidationError(
-                    f"Candidate {candidate.get('candidate_id')} references unknown project"
+                    f"Manifest count mismatch for {entity}: expected {expected}, got {actual}"
                 )
 
-    # Validate skill canonical IDs against taxonomy
-    taxonomy = load_taxonomy()
-    canonical_ids = {skill.canonical_id for skill in taxonomy}
-    # Also build alias index to ensure taxonomy is internally consistent
-    build_alias_index(taxonomy)
+        companies = data["companies"]
+        vacancies = data["vacancies"]
+        candidates = data["candidates"]
+        projects = data["projects"]
 
-    for candidate in candidates:
-        for skill in candidate.get("skills", []):
-            canonical_id = skill.get("canonical_id")
-            if canonical_id not in canonical_ids:
+        if len(companies) != EXPECTED_COUNTS["companies"]:
+            raise SeedValidationError("companies.json count does not match expected count")
+        if len(vacancies) != EXPECTED_COUNTS["vacancies"]:
+            raise SeedValidationError("vacancies.json count does not match expected count")
+        if len(candidates) != EXPECTED_COUNTS["candidates"]:
+            raise SeedValidationError("candidates.json count does not match expected count")
+
+        company_ids = {c["company_id"] for c in companies}
+        for vacancy in vacancies:
+            if vacancy["company_id"] not in company_ids:
                 raise SeedValidationError(
-                    f"Candidate {candidate.get('candidate_id')} has unknown canonical skill: "
-                    f"{canonical_id}"
+                    f"Vacancy {vacancy.get('vacancy_id')} references unknown company"
                 )
-    for vacancy in vacancies:
-        for skill_id in vacancy.get("essential_skills", []) + vacancy.get("desirable_skills", []):
-            if skill_id not in canonical_ids:
+
+        project_ids = {p["project_id"] for p in projects}
+        candidate_ids = {c["candidate_id"] for c in candidates}
+        for project in projects:
+            if project["candidate_id"] not in candidate_ids:
                 raise SeedValidationError(
-                    f"Vacancy {vacancy.get('vacancy_id')} has unknown canonical skill: {skill_id}"
+                    f"Project {project.get('project_id')} references unknown candidate"
                 )
+        for candidate in candidates:
+            for project_id in candidate.get("project_ids", []):
+                if project_id not in project_ids:
+                    raise SeedValidationError(
+                        f"Candidate {candidate.get('candidate_id')} references unknown project"
+                    )
+
+        # Validate skill canonical IDs against taxonomy
+        taxonomy = load_taxonomy()
+        canonical_ids = {skill.canonical_id for skill in taxonomy}
+        # Also build alias index to ensure taxonomy is internally consistent
+        build_alias_index(taxonomy)
+
+        for candidate in candidates:
+            for skill in candidate.get("skills", []):
+                canonical_id = skill.get("canonical_id")
+                if canonical_id not in canonical_ids:
+                    raise SeedValidationError(
+                        f"Candidate {candidate.get('candidate_id')} has unknown canonical skill: "
+                        f"{canonical_id}"
+                    )
+        for vacancy in vacancies:
+            for skill_id in vacancy.get("essential_skills", []) + vacancy.get(
+                "desirable_skills", []
+            ):
+                if skill_id not in canonical_ids:
+                    raise SeedValidationError(
+                        f"Vacancy {vacancy.get('vacancy_id')} has unknown canonical skill: "
+                        f"{skill_id}"
+                    )
+    except SeedValidationError:
+        raise
+    except Exception as exc:
+        raise SeedValidationError(f"Invalid dataset in {dataset_dir}: {exc}") from exc
 
     return data
 
@@ -200,6 +213,11 @@ async def _ensure_user(
     result = await session.execute(select(User).where(User.email == email))
     user = result.scalar_one_or_none()
     if user is not None:
+        if user.role != UserRole.TALENTO:
+            raise SeedValidationError(
+                f"Existing user {email!r} has incompatible role {user.role.value!r}; "
+                "seed requires TALENTO for synthetic candidates"
+            )
         report.entity("users").skipped += 1
         return user
 
@@ -341,10 +359,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Load SkillMatch synthetic seed dataset idempotently."
     )
+    default_dataset = _default_dataset_dir()
     parser.add_argument(
         "--dataset",
-        default="data/synthetic/v1",
-        help="Path to synthetic dataset directory (default: data/synthetic/v1)",
+        default=str(default_dataset),
+        help=f"Path to synthetic dataset directory (default: {default_dataset})",
     )
     parser.add_argument(
         "--database-url",
