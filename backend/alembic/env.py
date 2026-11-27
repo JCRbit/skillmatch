@@ -18,7 +18,9 @@ from skillmatch.modules.candidates.models import (  # noqa: F401
     CandidateProjectEvidenceAudit,
     CandidateSkill,
 )
+from skillmatch.modules.companies.models import Company  # noqa: F401
 from skillmatch.modules.identity.models import User  # noqa: F401
+from skillmatch.modules.jobs.models import Vacancy  # noqa: F401
 
 # ------------------------------------------------
 
