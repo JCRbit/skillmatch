@@ -17,6 +17,17 @@ to leak a candidate's data into a log collector that keeps it forever (FR-012, N
 The redaction happens on the record itself (:class:`RedactingFilter`), not only in the JSON
 formatter: a record can reach more than one handler, and a plain-text handler would happily print
 the traceback the JSON one drops. Sanitising the record first makes every handler safe.
+
+Two rules make the guarantee complete rather than partial:
+
+- **Only approved messages are written.** A message is kept only when it is a static template in
+  :data:`SAFE_MESSAGES` with no arguments. An f-string or a pre-interpolated string carries
+  personal data while ``record.args`` is empty, so inspecting ``args`` is not enough: anything
+  that is not on the allowlist becomes :data:`UNLOGGED_MESSAGE`.
+- **Every SkillMatch logger is covered.** A filter on a parent logger is not applied to records
+  emitted by a child logger, so the filter is attached to each SkillMatch logger by
+  :func:`get_logger`, and :func:`configure_logging` retrofits the ones created before it ran.
+  Third-party loggers are never touched.
 """
 
 import json
@@ -58,11 +69,30 @@ outcomes, never personal data, but a redaction list makes the rule enforced inst
 """
 
 UNLOGGED_MESSAGE: Final = "<message withheld>"
-"""What replaces a message that interpolated arguments.
+"""What replaces a message that is not on the allowlist.
 
-Only the template is kept, so a message built from personal data cannot reach the line. A caller
-that wants the value visible must log it as an identifier through ``extra``.
+An f-string or a pre-interpolated string carries personal data while ``record.args`` is empty, so
+the message itself has to be checked, not only its arguments. A caller that wants a value visible
+must log it as an identifier through ``extra``, which is redacted by name.
 """
+
+SAFE_MESSAGES: Final[frozenset[str]] = frozenset(
+    {
+        "readiness check passed",
+        "readiness check failed",
+        "Login refused: SKILLMATCH_AUTH_SERVICE_SECRET is not configured.",
+        "Unhandled error while processing %s %s",
+    }
+)
+"""Exact static messages approved for logging.
+
+Messages outside this allowlist are withheld because a string without formatting arguments may
+still contain personal data, for example an f-string. ``"Unhandled error while processing %s %s"``
+is listed as a template: it is approved before formatting, and its arguments are always dropped.
+"""
+
+_ROOT_LOGGER_NAME: Final = "skillmatch"
+"""Namespace of every application logger. Third-party loggers are never touched."""
 
 REQUEST_ID_HEADER: Final = "X-Request-ID"
 """Header used to receive and return the correlation id of a request."""
@@ -158,8 +188,8 @@ class RedactingFilter(logging.Filter):
 
     A formatter only protects the handler it belongs to. The same record can be printed by a
     plain-text handler, collected by a test fixture or forwarded by a library, so the personal
-    data has to be gone before it leaves the caller. This filter is installed on the
-    ``skillmatch`` logger and does exactly that.
+    data has to be gone before it leaves the caller. This filter is attached to every SkillMatch
+    logger by :func:`get_logger` and retrofitted by :func:`configure_logging`.
     """
 
     def filter(self, record: logging.LogRecord) -> bool:
@@ -171,8 +201,9 @@ class RedactingFilter(logging.Filter):
         Returns:
             Always ``True``: the record is kept, only its contents change.
         """
-        # An interpolated message would carry its arguments once formatted: keep the template.
-        if record.args:
+        # A message is written only when it is an approved template. Checking ``args`` is not
+        # enough: an f-string already carries the data with empty ``args``.
+        if record.args or not isinstance(record.msg, str) or record.msg not in SAFE_MESSAGES:
             record.msg = UNLOGGED_MESSAGE
             record.args = ()
 
@@ -214,7 +245,11 @@ class JsonFormatter(logging.Formatter):
             "timestamp": datetime.fromtimestamp(record.created, tz=UTC).isoformat(),
             "level": record.levelname,
             "logger": record.name,
-            "message": str(record.msg) if not record.args else UNLOGGED_MESSAGE,
+            "message": (
+                record.msg
+                if isinstance(record.msg, str) and record.msg in SAFE_MESSAGES and not record.args
+                else UNLOGGED_MESSAGE
+            ),
         }
 
         request_id = getattr(record, "request_id", None) or request_id_var.get()
@@ -236,27 +271,84 @@ class JsonFormatter(logging.Formatter):
         return json.dumps(payload, ensure_ascii=False, default=str)
 
 
+def _redacting_filter() -> RedactingFilter:
+    """Return the filter to attach to a logger.
+
+    Returns:
+        A new filter instance. Each logger gets its own, so removing one never disarms another.
+    """
+    return RedactingFilter()
+
+
+def _ensure_filter(logger: logging.Logger) -> None:
+    """Attach the redacting filter to ``logger`` unless it already has one.
+
+    Args:
+        logger: A SkillMatch logger.
+
+    Only the exact type is checked: a subclass would mean a different redaction rule, which is
+    precisely what this module exists to prevent.
+    """
+    if not any(type(existing) is RedactingFilter for existing in logger.filters):
+        logger.addFilter(_redacting_filter())
+
+
+def get_logger(name: str) -> logging.Logger:
+    """Return a SkillMatch logger that is guaranteed to redact.
+
+    Args:
+        name: Logger name, usually ``__name__``.
+
+    Returns:
+        The named logger, with :class:`RedactingFilter` attached.
+
+    Every application logger must come from here instead of ``logging.getLogger``: a filter on a
+    parent logger does not run for records emitted by a child, so a child with its own handler
+    would otherwise write unsanitised data. A name outside the ``skillmatch`` namespace is
+    refused, because third-party loggers are not ours to modify.
+
+    Raises:
+        ValueError: If the logger name is outside the SkillMatch namespace.
+    """
+    if name != _ROOT_LOGGER_NAME and not name.startswith(f"{_ROOT_LOGGER_NAME}."):
+        raise ValueError("Logger name must belong to the skillmatch namespace.")
+
+    logger = logging.getLogger(name)
+    _ensure_filter(logger)
+    return logger
+
+
 def configure_logging(level: str = "INFO") -> None:
-    """Install the redacting filter and the JSON formatter on the application's logger.
+    """Install the redacting filter and the JSON formatter on the application's loggers.
 
     Args:
         level: Minimum level to emit, as a name (``DEBUG``, ``INFO``...).
 
     The root logger keeps its handlers untouched: this only reconfigures the ``skillmatch``
-    logger, so uvicorn's own output is unaffected. Records still propagate, so a caller's own
+    namespace, so uvicorn's own output is unaffected. Records still propagate, so a caller's own
     handler (``caplog`` in tests, a collector in production) sees them already sanitised.
+
+    Existing SkillMatch loggers are protected, including child loggers with handlers attached
+    directly to them. Future application loggers use :func:`get_logger` to receive the same
+    protection.
     """
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(JsonFormatter())
 
-    logger = logging.getLogger("skillmatch")
-    logger.handlers.clear()
-    logger.addHandler(handler)
-    logger.addFilter(RedactingFilter())
+    root = logging.getLogger(_ROOT_LOGGER_NAME)
+    root.handlers.clear()
+    root.addHandler(handler)
+
+    for name, existing_logger in list(logging.root.manager.loggerDict.items()):
+        in_namespace = name == _ROOT_LOGGER_NAME or name.startswith(f"{_ROOT_LOGGER_NAME}.")
+        if in_namespace and isinstance(existing_logger, logging.Logger):
+            _ensure_filter(existing_logger)
+
+    _ensure_filter(root)
 
     # Fall back to INFO when the configured level is unknown.
     normalized_level = level.strip().upper()
     resolved_level = logging.getLevelNamesMapping().get(normalized_level, logging.INFO)
-    logger.setLevel(resolved_level)
+    root.setLevel(resolved_level)
 
-    logger.propagate = True
+    root.propagate = True

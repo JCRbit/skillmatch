@@ -189,7 +189,7 @@ def _record(**extra: object) -> logging.LogRecord:
         level=logging.INFO,
         pathname=__file__,
         lineno=1,
-        msg="something happened",
+        msg="readiness check passed",
         args=(),
         exc_info=None,
     )
@@ -203,7 +203,7 @@ def test_json_formatter_emits_one_object_per_line() -> None:
 
     assert payload["level"] == "INFO"
     assert payload["logger"] == "skillmatch.test"
-    assert payload["message"] == "something happened"
+    assert payload["message"] == "readiness check passed"
     assert payload["timestamp"].endswith("+00:00")
 
 

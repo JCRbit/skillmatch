@@ -96,6 +96,6 @@ def test_unexpected_errors_never_leak_internal_details(
     # The traceback is never written: it carries the exception's message (B-06, FR-012).
     assert "secret internal detail" not in caplog.text
     # The record keeps the exception's type, so an operator still knows what failed.
-    records = [record for record in caplog.records if record.name == "skillmatch"]
+    records = [record for record in caplog.records if record.name.startswith("skillmatch")]
     assert records
-    assert getattr(records[-1], "exception_type", None) == "RuntimeError"
+    assert records[-1].__dict__.get("exception_type") == "RuntimeError"

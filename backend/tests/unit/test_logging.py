@@ -9,6 +9,7 @@ Two layers are checked separately, because a leak can happen in either: the reco
 (:class:`JsonFormatter`, which protects the application's own output).
 """
 
+import io
 import json
 import logging
 from types import TracebackType
@@ -18,10 +19,13 @@ import pytest
 
 from skillmatch.core.logging import (
     REDACTED_PLACEHOLDER,
+    SAFE_MESSAGES,
     SENSITIVE_KEYS,
     UNLOGGED_MESSAGE,
     JsonFormatter,
     RedactingFilter,
+    configure_logging,
+    get_logger,
 )
 
 PERSONAL_EMAIL = "ana@example.test"
@@ -77,11 +81,18 @@ def test_a_message_never_interpolates_its_arguments() -> None:
     assert line["message"] == UNLOGGED_MESSAGE
 
 
-def test_a_plain_message_is_kept() -> None:
-    """A message with no arguments is the caller's own text and is safe to keep."""
+def test_an_approved_message_is_kept() -> None:
+    """A static template on the allowlist is written as it is."""
+    line = _line(_record("readiness check passed"))
+
+    assert line["message"] == "readiness check passed"
+
+
+def test_a_message_outside_the_allowlist_is_withheld() -> None:
+    """A message is written only when it is an approved template."""
     line = _line(_record("Projection served"))
 
-    assert line["message"] == "Projection served"
+    assert line["message"] == UNLOGGED_MESSAGE
 
 
 def test_an_exception_keeps_only_its_type() -> None:
@@ -164,13 +175,24 @@ def test_the_filter_removes_the_exception_before_any_handler_sees_it() -> None:
 
 
 def test_the_filter_removes_the_interpolated_message() -> None:
-    """The template survives, the arguments do not."""
+    """The template survives only if it is approved; the arguments never do."""
     record = _record("Candidate email: %s", (PERSONAL_EMAIL,))
 
     RedactingFilter().filter(record)
 
     assert record.args == ()
     assert record.getMessage() == UNLOGGED_MESSAGE
+    assert PERSONAL_EMAIL not in logging.Formatter().format(record)
+
+
+def test_an_interpolated_message_is_withheld_even_when_its_template_is_safe() -> None:
+    """Arguments always disqualify a message: only the bare template is written."""
+    record = _record("Unhandled error while processing %s %s", ("GET", f"/{PERSONAL_EMAIL}"))
+
+    RedactingFilter().filter(record)
+
+    assert record.msg == UNLOGGED_MESSAGE
+    assert record.args == ()
     assert PERSONAL_EMAIL not in logging.Formatter().format(record)
 
 
@@ -185,3 +207,97 @@ def test_the_filter_redacts_extra_fields_in_place() -> None:
     assert record.__dict__.get("email") == REDACTED_PLACEHOLDER
     assert record.__dict__.get("candidate") == REDACTED_PLACEHOLDER
     assert PERSONAL_EMAIL not in logging.Formatter().format(record)
+
+
+# ----------------------------------------------------------------- f-strings
+def test_an_f_string_is_withheld_even_with_empty_args() -> None:
+    """``record.args`` is empty here, so only the message itself can catch this."""
+    record = _record(f"Candidate email: {PERSONAL_EMAIL}")
+
+    assert record.args == ()
+    RedactingFilter().filter(record)
+
+    assert record.msg == UNLOGGED_MESSAGE
+    assert PERSONAL_EMAIL not in logging.Formatter().format(record)
+
+
+def test_a_pre_interpolated_message_is_withheld() -> None:
+    """A message built before the call behaves like an f-string."""
+    message = "Candidate email: " + PERSONAL_EMAIL
+    record = _record(message)
+
+    line = _line(record)
+
+    assert line["message"] == UNLOGGED_MESSAGE
+    assert PERSONAL_EMAIL not in json.dumps(line)
+
+
+def test_the_json_formatter_alone_withholds_an_unapproved_message() -> None:
+    """A caller that skips the filter still gets no personal data in the line."""
+    line = _line(_record(f"Candidate email: {PERSONAL_EMAIL}"))
+
+    assert line["message"] == UNLOGGED_MESSAGE
+    assert PERSONAL_EMAIL not in json.dumps(line)
+
+
+# -------------------------------------------------------------- child loggers
+def test_get_logger_attaches_the_filter() -> None:
+    """A logger created through the helper is protected from the start."""
+    logger = get_logger("skillmatch.test.child")
+
+    assert any(type(existing) is RedactingFilter for existing in logger.filters)
+
+
+def test_get_logger_refuses_a_third_party_name() -> None:
+    """Third-party loggers are not ours to modify."""
+    with pytest.raises(ValueError, match="must belong to the skillmatch namespace"):
+        get_logger("uvicorn.error")
+
+
+def test_configure_logging_retrofits_an_existing_child_logger() -> None:
+    """A module still calling ``logging.getLogger`` directly is protected anyway."""
+    child = logging.getLogger("skillmatch.legacy.child")
+    child.filters.clear()
+
+    configure_logging("INFO")
+
+    assert any(type(existing) is RedactingFilter for existing in child.filters)
+
+
+def test_a_child_logger_with_its_own_handler_redacts() -> None:
+    """The case that motivated the helper: a child with a direct handler."""
+    logger = get_logger("skillmatch.test.handler")
+    logger.handlers.clear()
+    logger.propagate = False
+
+    stream = io.StringIO()
+    handler = logging.StreamHandler(stream)
+    handler.setFormatter(logging.Formatter("%(message)s"))
+    logger.addHandler(handler)
+    try:
+        logger.error("Candidate email: %s", PERSONAL_EMAIL)
+        logger.error(f"Candidate email: {PERSONAL_EMAIL}")
+    finally:
+        logger.handlers.clear()
+        logger.propagate = True
+
+    written = stream.getvalue()
+    assert PERSONAL_EMAIL not in written
+    assert UNLOGGED_MESSAGE in written
+
+
+def test_a_third_party_logger_keeps_its_class_and_filters() -> None:
+    """The sanitisation stays inside the ``skillmatch`` namespace."""
+    third_party = logging.getLogger("httpx")
+
+    configure_logging("INFO")
+
+    assert type(third_party) is logging.Logger
+    assert not any(isinstance(existing, RedactingFilter) for existing in third_party.filters)
+
+
+def test_every_safe_message_is_a_static_template() -> None:
+    """The allowlist is the contract: each entry is a plain string with no data in it."""
+    for message in SAFE_MESSAGES:
+        assert isinstance(message, str)
+        assert PERSONAL_EMAIL not in message

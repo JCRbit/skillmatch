@@ -6,7 +6,6 @@ reloads the account from the database. The service only creates accounts and exc
 credentials for a signed token.
 """
 
-import logging
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -17,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from skillmatch.core.config import Settings
 from skillmatch.core.errors import InvalidCredentialsError
+from skillmatch.core.logging import get_logger
 from skillmatch.core.security import create_service_token
 from skillmatch.modules.identity.errors import (
     AuthenticationUnavailableError,
@@ -26,7 +26,7 @@ from skillmatch.modules.identity.models import ACTIVE_ACCOUNT_STATUS, User
 from skillmatch.modules.identity.passwords import PasswordHasher
 from skillmatch.modules.identity.schemas import LoginRequest, RegisterRequest
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 _INVALID_CREDENTIALS = "Credenciales inválidas."
 """One message for every login failure, so it never reveals which part was wrong."""

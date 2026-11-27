@@ -6,7 +6,6 @@ same shape. Validation errors never echo the submitted input, because it may con
 data.
 """
 
-import logging
 from collections.abc import Mapping
 from http import HTTPStatus
 from typing import ClassVar
@@ -16,9 +15,9 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from skillmatch.core.logging import REQUEST_ID_HEADER
+from skillmatch.core.logging import REQUEST_ID_HEADER, get_logger
 
-logger = logging.getLogger("skillmatch")
+logger = get_logger("skillmatch")
 
 PROBLEM_JSON = "application/problem+json"
 

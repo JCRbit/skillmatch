@@ -6,7 +6,6 @@ reports whether the process can serve traffic (it checks the database); ``/versi
 code that is running.
 """
 
-import logging
 import uuid
 from typing import Literal
 
@@ -19,9 +18,9 @@ from starlette.types import ASGIApp
 
 from skillmatch import __version__
 from skillmatch.api.deps import SessionDep, SettingsDep
-from skillmatch.core.logging import REQUEST_ID_HEADER, request_id_var
+from skillmatch.core.logging import REQUEST_ID_HEADER, get_logger, request_id_var
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 router = APIRouter(tags=["operations"])
 
