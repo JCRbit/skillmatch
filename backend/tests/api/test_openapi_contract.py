@@ -98,8 +98,12 @@ def test_no_candidate_url_carries_a_candidate_identifier(account_client: TestCli
 
     candidate_paths = [path for path in paths if path.startswith("/api/v1/candidates")]
     assert candidate_paths
+    # ``/candidates/{candidate_id}`` is the pseudonymised projection (B-06). The id is the
+    # profile's, never the account's, and it belongs to a company reading a profile the
+    # candidate chose to share; every other candidate URL must stay free of identifiers.
     assert all(
-        "{skill_id}" in path or "purpose" in path or "{" not in path for path in candidate_paths
+        "{skill_id}" in path or "purpose" in path or "{candidate_id}" in path or "{" not in path
+        for path in candidate_paths
     )
 
 
