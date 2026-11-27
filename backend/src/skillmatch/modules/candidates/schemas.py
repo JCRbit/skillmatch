@@ -521,9 +521,24 @@ class CandidateProjectUpdate(_Request):
 
     @model_validator(mode="after")
     def _at_least_one_valid_field(self) -> Self:
+        """Require a change and refuse null for non-nullable project fields."""
         if not self.model_fields_set:
             msg = "at least one field must be provided"
             raise ValueError(msg)
+
+        non_nullable_fields = (
+            "name",
+            "description",
+            "role",
+            "stack",
+            "source_type",
+            "project_date",
+        )
+        for name in non_nullable_fields:
+            if name in self.model_fields_set and getattr(self, name) is None:
+                msg = f"{name} must not be null"
+                raise ValueError(msg)
+
         return self
 
 

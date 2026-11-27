@@ -164,3 +164,75 @@ def test_project_requires_profile(account_client: TestClient, account: Account) 
     headers = account("noprofile@skillmatch.test")
     response = account_client.post(PROJECTS, json=PROJECT_BODY, headers=headers)
     assert_problem(response, status=404, code="candidate_profile_not_found")
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        pytest.param({"name": None}, id="name"),
+        pytest.param({"description": None}, id="description"),
+        pytest.param({"role": None}, id="role"),
+        pytest.param({"stack": None}, id="stack"),
+        pytest.param({"source_type": None}, id="source_type"),
+        pytest.param({"project_date": None}, id="project_date"),
+    ],
+)
+def test_project_patch_rejects_null_required_fields(
+    account_client: TestClient,
+    ana: Headers,
+    payload: dict[str, Any],
+) -> None:
+    created = account_client.post(PROJECTS, json=PROJECT_BODY, headers=ana)
+    assert created.status_code == 201, created.text
+    project_id = created.json()["id"]
+
+    response = account_client.patch(
+        f"{PROJECTS}/{project_id}",
+        json=payload,
+        headers=ana,
+    )
+
+    assert response.status_code == 422, response.text
+    assert response.headers["content-type"].startswith("application/problem+json")
+
+    # The rejected PATCH must not modify the stored project.
+    stored = account_client.get(f"{PROJECTS}/{project_id}", headers=ana)
+    assert stored.status_code == 200
+    assert stored.json()["name"] == PROJECT_BODY["name"]
+
+
+def test_project_patch_allows_clearing_source_url(
+    account_client: TestClient,
+    ana: Headers,
+) -> None:
+    created = account_client.post(PROJECTS, json=PROJECT_BODY, headers=ana)
+    assert created.status_code == 201, created.text
+    project_id = created.json()["id"]
+
+    response = account_client.patch(
+        f"{PROJECTS}/{project_id}",
+        json={"source_url": None},
+        headers=ana,
+    )
+
+    assert response.status_code == 200, response.text
+    assert response.json()["source_url"] is None
+
+
+def test_project_cross_owner_patch_and_delete_hidden(
+    account_client: TestClient, ana: Headers, bea: Headers
+) -> None:
+    created = account_client.post(PROJECTS, json=PROJECT_BODY, headers=ana)
+    assert created.status_code == 201, created.text
+    project_id = created.json()["id"]
+
+    patched = account_client.patch(f"{PROJECTS}/{project_id}", json={"name": "Hacked"}, headers=bea)
+    assert_problem(patched, status=404, code="not_found")
+
+    deleted = account_client.delete(f"{PROJECTS}/{project_id}", headers=bea)
+    assert_problem(deleted, status=404, code="not_found")
+
+    # Owner's project unchanged
+    owner_get = account_client.get(f"{PROJECTS}/{project_id}", headers=ana)
+    assert owner_get.status_code == 200
+    assert owner_get.json()["name"] == PROJECT_BODY["name"]
