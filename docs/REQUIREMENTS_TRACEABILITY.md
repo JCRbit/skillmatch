@@ -40,6 +40,29 @@ Nota: `VERIFIED` solo cuando hay evidencia de test/reproducible; `NOT_IMPLEMENTE
 
 > **Alcance de la verificación:** estos resultados acreditan la carga del catálogo, su normalización y la resolución de alias. No acreditan todavía la integración de las skills en los perfiles de candidatos, ofertas o procesos de matching.
 
+## Trazabilidad de implementación — C-01: contrato OpenAPI v1 congelado
+
+**Issue:** [C-01 — Congelar contrato OpenAPI v1](https://github.com/JCRbit/skillmatch/issues/45)
+**Requisitos:** US-09, US-15, US-17 · FR-011, FR-012
+**Dependencias:** #23 `B-01` (cerrada), #26 `B-02` (cerrada).
+
+| Elemento | Definición / evidencia |
+|---|---|
+| Alcance | El contrato HTTP de la v1 se publica como dato versionado y solo cambia por PR aprobado por la PO (Vanessa) y por quien lo consume. |
+| Documentación | `docs/api/README.md` (política de freeze, cambios compatibles e incompatibles, procedimiento para la v2) y `docs/CI.md` (job `Contract · compatibilidad`). |
+| Documento publicado | `docs/api/openapi-v1.json`, copia exacta de `backend/openapi.json`. |
+| Mocks | `docs/api/examples/operations.json`: un ejemplo de petición y respuesta por operación, generado desde el documento. |
+| Herramientas | `backend/scripts/export_openapi.py` (regenerar y `--check`), `backend/scripts/check_contract_compatibility.py` (cambios incompatibles), `backend/scripts/generate_contract_examples.py` (mocks). |
+| Pruebas | `backend/tests/api/test_contract_freeze.py` (21 pruebas) y `backend/tests/api/test_openapi_contract.py`. |
+| Criterios verificados | El documento publicado coincide con el que sirve `/openapi.json`; un endpoint, un código de respuesta, un campo o un valor de enum que desaparece falla la comprobación; añadir un campo opcional o relajar un requisito no falla; los ejemplos cubren las 28 operaciones publicadas. |
+| Estado de implementación | `VERIFIED` mediante pruebas reproducibles locales y el job de CI. |
+| Pendiente de DoD | Revisión humana cruzada de Isabela y cierre de la revisión de la issue. |
+
+> **Alcance de la verificación:** acredita que el contrato publicado no puede estrecharse sin que
+> la CI lo detecte y que los mocks siguen al documento. Las operaciones del flujo de interés y
+> match mutuo (`B-07`, #49) no están en `main` y por tanto no están congeladas: entran en la v1 con
+> su propio PR cuando esa tarea se mergee, siguiendo el procedimiento de `docs/api/README.md`.
+
 ## Detalle de requisitos críticos del brief oficial (no omitidos)
 
 ### Brecha A — Entrevista inicial con IA y feedback personalizado (LangGraph)

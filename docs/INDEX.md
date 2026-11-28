@@ -25,6 +25,7 @@ Este archivo es la única puerta de entrada a la documentación del repositorio.
 - [TECH_STACK.md](TECH_STACK.md) — Stack técnica propuesta y dependencias.
 - [DATA_MODEL.md](DATA_MODEL.md) — Esquema de datos previsto.
 - [CANDIDATE_PROFILE.md](CANDIDATE_PROFILE.md) — Perfil de candidato (B-03, FR-002): endpoints, decisiones, esquema físico y criterios de aceptación con sus pruebas.
+- [api/README.md](api/README.md) — Contrato de la API v1 congelado (C-01): documento publicado, ejemplos/mocks y política de freeze; qué es un cambio incompatible y cómo se abre la v2.
 
 Registro de decisiones de arquitectura (ADRs). Las decisiones de producto y proceso no van aquí: están en [DECISION_LOG.md](DECISION_LOG.md).
 

@@ -379,12 +379,62 @@ jobs:
         if: ${{ hashFiles('backend/Dockerfile') != '' }}
         run: bash scripts/smoke_test_image.sh skillmatch-api:ci "${GITHUB_SHA}"
 
+  contract:
+    name: Contract · compatibilidad
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Note when absent
+        if: ${{ hashFiles('backend/pyproject.toml') == '' }}
+        run: echo "::notice::backend/pyproject.toml not found; contract checks were skipped."
+
+      - name: Set up Python
+        if: ${{ hashFiles('backend/pyproject.toml') != '' }}
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        if: ${{ hashFiles('backend/pyproject.toml') != '' }}
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Install locked dependencies
+        if: ${{ hashFiles('backend/pyproject.toml') != '' }}
+        working-directory: backend
+        run: uv sync --locked
+
+      # The committed document must be the one the code produces.
+      - name: Generated contract is up to date
+        if: ${{ hashFiles('backend/pyproject.toml') != '' }}
+        working-directory: backend
+        run: uv run python scripts/export_openapi.py --check
+
+      # The published contract must not lose anything a consumer relies on (C-01).
+      - name: Published contract is not broken
+        if: ${{ hashFiles('docs/api/openapi-v1.json') != '' }}
+        working-directory: backend
+        run: uv run python scripts/check_contract_compatibility.py
+
+      # The mocks the frontend consumes must follow the published contract.
+      - name: Contract examples are up to date
+        if: ${{ hashFiles('docs/api/openapi-v1.json') != '' }}
+        working-directory: backend
+        run: uv run python scripts/generate_contract_examples.py --check
+
   gate:
     name: CI · gate
     # `always()` is required: without it a failed dependency would skip this job, and GitHub
     # treats a skipped required check as passing.
     if: ${{ always() }}
-    needs: [docs, security, gitleaks, code, audit, migrations, infra]
+    needs: [docs, security, gitleaks, code, audit, migrations, infra, contract]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
