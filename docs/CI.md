@@ -15,12 +15,25 @@ required check **`CI · gate`** is green; that check succeeds only if every job 
 | `Audit · dependency vulnerabilities` | Known CVEs in locked **runtime** dependencies (`pip-audit`, `npm audit --audit-level=high`) | see below |
 | `Database · migrations on a temporary database` | `alembic upgrade head`, `downgrade base`, `upgrade head` and `alembic check` on a throwaway PostgreSQL | see below |
 | `Infra · compose config and image build` | `docker compose config` is valid; the API development image builds; the API **production** image builds and passes `scripts/smoke_test_image.sh` | `docker compose config -q && docker compose build api`, then the production commands below |
+| `Contract · compatibilidad` | `backend/openapi.json` is not stale; the published contract (`docs/api/openapi-v1.json`) loses nothing a consumer relies on; the mocks in `docs/api/examples/` follow it (`C-01`) | see below |
 | `CI · gate` | Aggregates all of the above; the only check that needs to be required | — |
 
 Jobs whose code does not exist yet (frontend, Alembic, compose) print a `notice` annotation and skip
 their steps, so a skipped step is always visible in the run summary instead of passing silently.
 
 ### Local equivalents
+
+```bash
+# Contract, from backend/ (C-01)
+uv run python scripts/export_openapi.py --check
+uv run python scripts/check_contract_compatibility.py
+uv run python scripts/generate_contract_examples.py --check
+```
+
+The second command is the one that matters: it compares the document the code produces with the
+one published in `docs/api/openapi-v1.json` and fails on anything that narrows the API. What counts
+as a breaking change, and how a v2 is opened instead, is in
+[`api/README.md`](api/README.md).
 
 ```bash
 # Backend (from backend/)

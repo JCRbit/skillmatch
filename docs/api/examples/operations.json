@@ -1,0 +1,672 @@
+{
+  "contract": "docs/api/openapi-v1.json",
+  "operations": {
+    "POST /api/v1/auth/login": {
+      "method": "POST",
+      "path": "/api/v1/auth/login",
+      "request": {
+        "media_type": "application/json",
+        "body": {
+          "email": "candidate@example.test",
+          "password": "sample-password-12"
+        }
+      },
+      "response": {
+        "status": 200,
+        "media_type": "application/json",
+        "body": {
+          "access_token": "sample-bearer-token",
+          "token_type": "bearer",
+          "expires_in": 3600,
+          "user": {
+            "id": 1,
+            "email": "candidate@example.test",
+            "role": "talento"
+          }
+        }
+      }
+    },
+    "GET /api/v1/auth/me": {
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "response": {
+        "status": 200,
+        "media_type": "application/json",
+        "body": {
+          "id": 1,
+          "email": "candidate@example.test",
+          "role": "talento",
+          "status": "sample",
+          "created_at": "2026-01-15T09:30:00+00:00"
+        }
+      }
+    },
+    "POST /api/v1/auth/register": {
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "request": {
+        "media_type": "application/json",
+        "body": {
+          "email": "candidate@example.test",
+          "password": "sample-password-12",
+          "role": "talento"
+        }
+      },
+      "response": {
+        "status": 201,
+        "media_type": "application/json",
+        "body": {
+          "id": 1,
+          "email": "candidate@example.test",
+          "role": "talento",
+          "status": "sample",
+          "created_at": "2026-01-15T09:30:00+00:00"
+        }
+      }
+    },
+    "DELETE /api/v1/candidates/me": {
+      "method": "DELETE",
+      "path": "/api/v1/candidates/me"
+    },
+    "GET /api/v1/candidates/me": {
+      "method": "GET",
+      "path": "/api/v1/candidates/me",
+      "response": {
+        "status": 200,
+        "media_type": "application/json",
+        "body": {
+          "display_name": "Sample Candidate",
+          "summary": "Sample summary written for the contract example.",
+          "city": "Sample City",
+          "languages": [
+            "spanish",
+            "english"
+          ],
+          "preferences": {
+            "work_modes": [
+              "remote"
+            ],
+            "contract_types": [
+              "full_time"
+            ],
+            "preferred_locations": [
+              "sample"
+            ],
+            "interests": [
+              "sample"
+            ]
+          },
+          "visibility": {
+            "discoverable": true,
+            "show_location": true
+          },
+          "created_at": "2026-01-15T09:30:00+00:00",
+          "updated_at": "2026-01-15T09:30:00+00:00"
+        }
+      }
+    },
+    "PATCH /api/v1/candidates/me": {
+      "method": "PATCH",
+      "path": "/api/v1/candidates/me",
+      "request": {
+        "media_type": "application/json",
+        "body": {
+          "display_name": "Sample Candidate",
+          "summary": "Sample summary written for the contract example.",
+          "city": "Sample City",
+          "languages": [
+            "spanish",
+            "english"
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "media_type": "application/json",
+        "body": {
+          "display_name": "Sample Candidate",
+          "summary": "Sample summary written for the contract example.",
+          "city": "Sample City",
+          "languages": [
+            "spanish",
+            "english"
+          ],
+          "preferences": {
+            "work_modes": [
+              "remote"
+            ],
+            "contract_types": [
+              "full_time"
+            ],
+            "preferred_locations": [
+              "sample"
+            ],
+            "interests": [
+              "sample"
+            ]
+          },
+          "visibility": {
+            "discoverable": true,
+            "show_location": true
+          },
+          "created_at": "2026-01-15T09:30:00+00:00",
+          "updated_at": "2026-01-15T09:30:00+00:00"
+        }
+      }
+    },
+    "POST /api/v1/candidates/me": {
+      "method": "POST",
+      "path": "/api/v1/candidates/me",
+      "request": {
+        "media_type": "application/json",
+        "body": {
+          "display_name": "Sample Candidate",
+          "summary": "Sample summary written for the contract example.",
+          "city": "Sample City",
+          "languages": [
+            "spanish",
+            "english"
+          ]
+        }
+      },
+      "response": {
+        "status": 201,
+        "media_type": "application/json",
+        "body": {
+          "display_name": "Sample Candidate",
+          "summary": "Sample summary written for the contract example.",
+          "city": "Sample City",
+          "languages": [
+            "spanish",
+            "english"
+          ],
+          "preferences": {
+            "work_modes": [
+              "remote"
+            ],
+            "contract_types": [
+              "full_time"
+            ],
+            "preferred_locations": [
+              "sample"
+            ],
+            "interests": [
+              "sample"
+            ]
+          },
+          "visibility": {
+            "discoverable": true,
+            "show_location": true
+          },
+          "created_at": "2026-01-15T09:30:00+00:00",
+          "updated_at": "2026-01-15T09:30:00+00:00"
+        }
+      }
+    },
+    "GET /api/v1/candidates/me/consents": {
+      "method": "GET",
+      "path": "/api/v1/candidates/me/consents",
+      "response": {
+        "status": 200,
+        "media_type": "application/json",
+        "body": {
+          "consents": [
+            {
+              "purpose": "discovery",
+              "granted": true,
+              "granted_at": "2026-01-15T09:30:00+00:00",
+              "revoked_at": null,
+              "policy_version": "2026-01"
+            }
+          ]
+        }
+      }
+    },
+    "PUT /api/v1/candidates/me/consents/{purpose}": {
+      "method": "PUT",
+      "path": "/api/v1/candidates/me/consents/{purpose}",
+      "request": {
+        "media_type": "application/json",
+        "body": {
+          "granted": true,
+          "policy_version": "2026-01"
+        }
+      },
+      "response": {
+        "status": 200,
+        "media_type": "application/json",
+        "body": {
+          "purpose": "discovery",
+          "granted": true,
+          "granted_at": "2026-01-15T09:30:00+00:00",
+          "revoked_at": null,
+          "policy_version": "2026-01"
+        }
+      }
+    },
+    "PUT /api/v1/candidates/me/preferences": {
+      "method": "PUT",
+      "path": "/api/v1/candidates/me/preferences",
+      "request": {
+        "media_type": "application/json",
+        "body": {
+          "work_modes": [
+            "remote"
+          ],
+          "contract_types": [
+            "full_time"
+          ],
+          "preferred_locations": [
+            "sample"
+          ],
+          "interests": [
+            "sample"
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "media_type": "application/json",
+        "body": {
+          "work_modes": [
+            "remote"
+          ],
+          "contract_types": [
+            "full_time"
+          ],
+          "preferred_locations": [
+            "sample"
+          ],
+          "interests": [
+            "sample"
+          ]
+        }
+      }
+    },
+    "GET /api/v1/candidates/me/skills": {
+      "method": "GET",
+      "path": "/api/v1/candidates/me/skills",
+      "response": {
+        "status": 200,
+        "media_type": "application/json",
+        "body": [
+          {
+            "id": 1,
+            "name": "Sample name",
+            "level": "intermediate",
+            "created_at": "2026-01-15T09:30:00+00:00",
+            "updated_at": "2026-01-15T09:30:00+00:00"
+          }
+        ]
+      }
+    },
+    "POST /api/v1/candidates/me/skills": {
+      "method": "POST",
+      "path": "/api/v1/candidates/me/skills",
+      "request": {
+        "media_type": "application/json",
+        "body": {
+          "name": "Sample name",
+          "level": "intermediate"
+        }
+      },
+      "response": {
+        "status": 201,
+        "media_type": "application/json",
+        "body": {
+          "id": 1,
+          "name": "Sample name",
+          "level": "intermediate",
+          "created_at": "2026-01-15T09:30:00+00:00",
+          "updated_at": "2026-01-15T09:30:00+00:00"
+        }
+      }
+    },
+    "DELETE /api/v1/candidates/me/skills/{skill_id}": {
+      "method": "DELETE",
+      "path": "/api/v1/candidates/me/skills/{skill_id}"
+    },
+    "PATCH /api/v1/candidates/me/skills/{skill_id}": {
+      "method": "PATCH",
+      "path": "/api/v1/candidates/me/skills/{skill_id}",
+      "request": {
+        "media_type": "application/json",
+        "body": {
+          "name": "Sample name",
+          "level": "intermediate"
+        }
+      },
+      "response": {
+        "status": 200,
+        "media_type": "application/json",
+        "body": {
+          "id": 1,
+          "name": "Sample name",
+          "level": "intermediate",
+          "created_at": "2026-01-15T09:30:00+00:00",
+          "updated_at": "2026-01-15T09:30:00+00:00"
+        }
+      }
+    },
+    "PUT /api/v1/candidates/me/visibility": {
+      "method": "PUT",
+      "path": "/api/v1/candidates/me/visibility",
+      "request": {
+        "media_type": "application/json",
+        "body": {
+          "discoverable": true,
+          "show_location": true
+        }
+      },
+      "response": {
+        "status": 200,
+        "media_type": "application/json",
+        "body": {
+          "discoverable": true,
+          "show_location": true
+        }
+      }
+    },
+    "GET /api/v1/candidates/{candidate_id}": {
+      "method": "GET",
+      "path": "/api/v1/candidates/{candidate_id}",
+      "response": {
+        "status": 200,
+        "media_type": "application/json",
+        "body": {
+          "display_name": "Sample Candidate",
+          "summary": "Sample summary written for the contract example.",
+          "city": "Sample City",
+          "languages": [
+            "spanish",
+            "english"
+          ],
+          "skills": [
+            {
+              "name": "Sample name",
+              "level": "intermediate"
+            }
+          ]
+        }
+      }
+    },
+    "DELETE /api/v1/companies/me": {
+      "method": "DELETE",
+      "path": "/api/v1/companies/me"
+    },
+    "GET /api/v1/companies/me": {
+      "method": "GET",
+      "path": "/api/v1/companies/me",
+      "response": {
+        "status": 200,
+        "media_type": "application/json",
+        "body": {
+          "id": 1,
+          "name": "Sample name",
+          "description": "Sample description for the contract example.",
+          "website": "https://example.test",
+          "location": "Sample City",
+          "created_at": "2026-01-15T09:30:00+00:00",
+          "updated_at": "2026-01-15T09:30:00+00:00"
+        }
+      }
+    },
+    "PATCH /api/v1/companies/me": {
+      "method": "PATCH",
+      "path": "/api/v1/companies/me",
+      "request": {
+        "media_type": "application/json",
+        "body": {
+          "name": "Sample name",
+          "description": "Sample description for the contract example.",
+          "website": "https://example.test",
+          "location": "Sample City"
+        }
+      },
+      "response": {
+        "status": 200,
+        "media_type": "application/json",
+        "body": {
+          "id": 1,
+          "name": "Sample name",
+          "description": "Sample description for the contract example.",
+          "website": "https://example.test",
+          "location": "Sample City",
+          "created_at": "2026-01-15T09:30:00+00:00",
+          "updated_at": "2026-01-15T09:30:00+00:00"
+        }
+      }
+    },
+    "POST /api/v1/companies/me": {
+      "method": "POST",
+      "path": "/api/v1/companies/me",
+      "request": {
+        "media_type": "application/json",
+        "body": {
+          "name": "Sample name",
+          "description": "Sample description for the contract example.",
+          "website": "https://example.test",
+          "location": "Sample City"
+        }
+      },
+      "response": {
+        "status": 201,
+        "media_type": "application/json",
+        "body": {
+          "id": 1,
+          "name": "Sample name",
+          "description": "Sample description for the contract example.",
+          "website": "https://example.test",
+          "location": "Sample City",
+          "created_at": "2026-01-15T09:30:00+00:00",
+          "updated_at": "2026-01-15T09:30:00+00:00"
+        }
+      }
+    },
+    "GET /api/v1/jobs": {
+      "method": "GET",
+      "path": "/api/v1/jobs",
+      "response": {
+        "status": 200,
+        "media_type": "application/json",
+        "body": [
+          {
+            "id": 1,
+            "company_id": 7,
+            "title": "Sample vacancy title",
+            "description": "Sample description for the contract example.",
+            "seniority": "junior",
+            "location": "Sample City",
+            "work_mode": "hybrid",
+            "contract_type": "full_time",
+            "salary_min": 24000,
+            "salary_max": 32000,
+            "salary_currency": "EUR",
+            "essential_skills": [
+              "sample"
+            ],
+            "desirable_skills": [
+              "sample"
+            ],
+            "status": "draft",
+            "created_at": "2026-01-15T09:30:00+00:00",
+            "updated_at": "2026-01-15T09:30:00+00:00"
+          }
+        ]
+      }
+    },
+    "POST /api/v1/jobs": {
+      "method": "POST",
+      "path": "/api/v1/jobs",
+      "request": {
+        "media_type": "application/json",
+        "body": {
+          "title": "Sample vacancy title",
+          "description": "Sample description for the contract example.",
+          "seniority": "junior",
+          "location": "Sample City",
+          "work_mode": "hybrid",
+          "contract_type": "full_time",
+          "salary_min": 24000,
+          "salary_max": 32000,
+          "salary_currency": "EUR",
+          "essential_skills": [
+            "sample"
+          ],
+          "desirable_skills": [
+            "sample"
+          ],
+          "status": "draft"
+        }
+      },
+      "response": {
+        "status": 201,
+        "media_type": "application/json",
+        "body": {
+          "id": 1,
+          "company_id": 7,
+          "title": "Sample vacancy title",
+          "description": "Sample description for the contract example.",
+          "seniority": "junior",
+          "location": "Sample City",
+          "work_mode": "hybrid",
+          "contract_type": "full_time",
+          "salary_min": 24000,
+          "salary_max": 32000,
+          "salary_currency": "EUR",
+          "essential_skills": [
+            "sample"
+          ],
+          "desirable_skills": [
+            "sample"
+          ],
+          "status": "draft",
+          "created_at": "2026-01-15T09:30:00+00:00",
+          "updated_at": "2026-01-15T09:30:00+00:00"
+        }
+      }
+    },
+    "DELETE /api/v1/jobs/{vacancy_id}": {
+      "method": "DELETE",
+      "path": "/api/v1/jobs/{vacancy_id}"
+    },
+    "GET /api/v1/jobs/{vacancy_id}": {
+      "method": "GET",
+      "path": "/api/v1/jobs/{vacancy_id}",
+      "response": {
+        "status": 200,
+        "media_type": "application/json",
+        "body": {
+          "id": 1,
+          "company_id": 7,
+          "title": "Sample vacancy title",
+          "description": "Sample description for the contract example.",
+          "seniority": "junior",
+          "location": "Sample City",
+          "work_mode": "hybrid",
+          "contract_type": "full_time",
+          "salary_min": 24000,
+          "salary_max": 32000,
+          "salary_currency": "EUR",
+          "essential_skills": [
+            "sample"
+          ],
+          "desirable_skills": [
+            "sample"
+          ],
+          "status": "draft",
+          "created_at": "2026-01-15T09:30:00+00:00",
+          "updated_at": "2026-01-15T09:30:00+00:00"
+        }
+      }
+    },
+    "PATCH /api/v1/jobs/{vacancy_id}": {
+      "method": "PATCH",
+      "path": "/api/v1/jobs/{vacancy_id}",
+      "request": {
+        "media_type": "application/json",
+        "body": {
+          "title": "Sample vacancy title",
+          "description": "Sample description for the contract example.",
+          "seniority": "junior",
+          "location": "Sample City",
+          "work_mode": "hybrid",
+          "contract_type": "full_time",
+          "salary_min": 24000,
+          "salary_max": 32000,
+          "salary_currency": "EUR",
+          "essential_skills": [
+            "sample"
+          ],
+          "desirable_skills": [
+            "sample"
+          ],
+          "status": "draft"
+        }
+      },
+      "response": {
+        "status": 200,
+        "media_type": "application/json",
+        "body": {
+          "id": 1,
+          "company_id": 7,
+          "title": "Sample vacancy title",
+          "description": "Sample description for the contract example.",
+          "seniority": "junior",
+          "location": "Sample City",
+          "work_mode": "hybrid",
+          "contract_type": "full_time",
+          "salary_min": 24000,
+          "salary_max": 32000,
+          "salary_currency": "EUR",
+          "essential_skills": [
+            "sample"
+          ],
+          "desirable_skills": [
+            "sample"
+          ],
+          "status": "draft",
+          "created_at": "2026-01-15T09:30:00+00:00",
+          "updated_at": "2026-01-15T09:30:00+00:00"
+        }
+      }
+    },
+    "GET /health": {
+      "method": "GET",
+      "path": "/health",
+      "response": {
+        "status": 200,
+        "media_type": "application/json",
+        "body": {
+          "status": "sample"
+        }
+      }
+    },
+    "GET /ready": {
+      "method": "GET",
+      "path": "/ready",
+      "response": {
+        "status": 200,
+        "media_type": "application/json",
+        "body": {
+          "status": "ok",
+          "checks": {}
+        }
+      }
+    },
+    "GET /version": {
+      "method": "GET",
+      "path": "/version",
+      "response": {
+        "status": 200,
+        "media_type": "application/json",
+        "body": {
+          "name": "Sample name",
+          "version": "sample",
+          "environment": "sample",
+          "git_sha": "sample"
+        }
+      }
+    }
+  }
+}
